@@ -1,80 +1,49 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * File containing onlineusers class.
+ *
+ * @package    block_online_users
+ * @copyright  2020 onwards Martin Dougiamas (http://dougiamas.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-require('classes/engine.php');
+namespace block_sence;
 
-class block_sence extends block_base {
+defined('MOODLE_INTERNAL') || die();
 
-    public $alumnos, $codigo_sence;
+/**
+ * Class used to list and count online users
+ *
+ * @package    block_online_users
+ * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class engine{
 
-    public function init() {
-        // $this->title = get_string('sence', 'block_sence');
-        $this->title = 'Modulo Sence';
-    }
-    // The PHP tag and the curly bracket for the class definition
-    // will only be closed after there is another function added in the next section.
+    public $db, $user, $course;
 
-    function has_config() {
-        return true;
-    }
-
-    function instance_allow_config() {
-        return true;
-    }
-
-    public function get_content() {
-        global $USER, $CFG, $COURSE, $DB;
-
-
-        $this->content =  new stdClass;
-
-        if( isset( $_POST['RunAlumno'] ) ){
-            $content = $this->procesa_respuesta( $_POST );
-            $this->content->text  = $content;
-            return $this->content;
-        }
-
-        if( !$this->existen_campos_sence() ){
-            $content = 'Los Custom Fields requeridos para este Pugin no están configurados';
-            $this->content->text  = $content;
-            return $this->content;
-        }
-
-        if( !$this->es_curso_sence() ){
-            $content = 'Este curso no tiene código SENCE';
-            $this->content->text  = $content;
-            return $this->content;
-        }
-
-        if( !$this->es_alumno() ){
-            $content = 'Bienvenido '. $USER->firstname;
-            $this->content->text  = $content;
-            return $this->content;
-        }
-
-        if( !$this->es_alumno_sence() ){
-            // Pendiente de buscar el campo nombre del alumno
-            $content = 'Bienvenido '. $USER->firstname;
-            $this->content->text  = $content;
-            return $this->content;
-        }
-
-        if( $this->tiene_asistencia() ){
-            $content = 'Bienvenido ' . $USER->firstname . '<br>¡Ya registraste tu asistencia!';
-            $this->content = $content;
-            return $this->content;
-        }
-
-        $content = $this->prepare_form( $this->page->url );
-        $this->content->text = $content;
-        $this->content->footer ='<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
-
-        return $this->content;
-
+    public function __construc( $db, $user, $course ){
+        $this->$db = $db;
+        $this->$user = $user;
+        $this->$course = $course;
     }
 
-    function procesa_respuesta( $req ){
-
+    public function procesa_respuesta( $req ){
         $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
         $CodigoCurso = isset($req['CodigoCurso']) ? $req['CodigoCurso'] : 0;
         $IdSesionAlumno = isset($req['IdSesionAlumno']) ? $req['IdSesionAlumno'] : 0;
@@ -94,13 +63,13 @@ class block_sence extends block_base {
 
     }
 
-    function registra_asistencia_moodle( $req ){
+    public function registra_asistencia_moodle( $req ){
         // Registrara los datos del req en la base de datos;
         return 0;
 
     }
 
-    function describe_error($error){
+    public function describe_error($error){
 
         $errores_sence = [
             '100' =>  'Contraseña incorrecta.', //Contraseña incorrecta.
@@ -129,45 +98,32 @@ class block_sence extends block_base {
 
     }
 
-    function es_curso_sence(){
-        global $DB, $COURSE;
-        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso'])->id;
-        $this->codigo_sence = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
-        return strlen($this->codigo_sence) > 2  ? 1 : 0;
+    public function es_curso_sence(){
+        return true;
+        // Esta función debe revisar el campo codigo_sence_curso contenga un código registrado.
     }
 
-    function es_alumno_sence(){
-        global $DB, $COURSE, $USER;
-        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno'])->id;
-        $this->alumnos = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
-        if( strlen($this->alumnos) < 7 ){
-            return false;
-        }
+    public function es_alumno_sence(){
+        return true;
+        // Busca el run del alumno
+        // Busca en codigo_sence_alumno si ese run se encuentra allí con el el dato del código
 
-        $this->alumnos = $this->parsear_codigo_alumnos($this->alumnos);
-
-        return isset($this->alumnos[strtolower($USER->idnumber)]);
     }
 
-    function es_alumno(){
+    public function es_alumno(){
         return true;
     }
 
-    function prepare_form( $currenturl ){
-        global $USER;
+    public function prepare_form( $currenturl ){
+        // Prepara el formulario para mandar a sence
 
-        // block_sence_token
-        // block_sence_rut
-        // block_sence_lineacap
-
-        $Token = '3EEE939E-9A98-44E9-B6D5-4422D0832535';
         $RutOtec = '76423250-k';
+        $Token = '3EEE939E-9A98-44E9-B6D5-4422D0832535';
         $LineaCapacitacion = '3';
-
-        $RunAlumno = strtolower($USER->idnumber);
+        $RunAlumno = '26107640-3';
         $IdSesionAlumno = '2';
-        $CodSence = $this->codigo_sence;
-        $CodigoCurso = $this->alumnos[ $RunAlumno ];
+        $CodSence = '1237991108';
+        $CodigoCurso = '5911547';
         $UrlRetoma = $currenturl;
         $UrlError = $currenturl;
 
@@ -189,7 +145,7 @@ class block_sence extends block_base {
                 </form>';
     }
 
-    function existen_campos_sence(){
+    public function existen_campos_sence(){
         global $DB;
         $sence_curso_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso']);
         $sence_alumno_id = $DB->get_record('customfield_field', ['shortname' => 'codig_sence_alumno']);
@@ -201,30 +157,9 @@ class block_sence extends block_base {
         return true;
     }
 
-    function tiene_asistencia(){
+    public function tiene_asistencia(){
         global $USER, $COURSE;
         return $COURSE->id == 2;
-    }
-
-    function parsear_codigo_alumnos($stralumnos){
-    
-        if( strlen($stralumnos) < 7 ){
-            return false;
-        }
-        
-        $stralumnos = str_replace('<p>', '', $stralumnos );
-        $stralumnos = str_replace('</p>', ' ', $stralumnos );
-        $alumnos = explode(' ', $stralumnos);
-        
-        $reult = [];
-        foreach($alumnos as $key => $alumno){
-            $exploded = explode(',', $alumno);
-            if(  count($exploded) == 2  ){
-                $result[$exploded[0]] = $exploded[1];
-            }
-        }
-        
-        return $result;
     }
 
 }
