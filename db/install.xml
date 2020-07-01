@@ -15,7 +15,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="coursetime" UNIQUE="false" FIELDS="courseid, userid"/>
+        <INDEX NAME="asistencia" UNIQUE="true" FIELDS="courseid, userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

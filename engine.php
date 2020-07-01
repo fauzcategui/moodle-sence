@@ -15,35 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * File containing onlineusers class.
+ * File containing engine sence class.
  *
- * @package    block_online_users
- * @copyright  2020 onwards Martin Dougiamas (http://dougiamas.com)
+ * @package    block_sence
+ * @copyright  2020 onwards Felipe Uzcátegui
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace block_sence;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class used to list and count online users
+ * Class utilizada para procesar la asistencia de alumnos del bloque Sence
  *
- * @package    block_online_users
- * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
+ * @package    block_sence
+ * @copyright  2020 onwards Felipe Uzcátegui
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class engine{
+class Engine{
 
-    public $db, $user, $course;
+    private $alumnos, $codigo_sence;
 
-    public function __construc( $db, $user, $course ){
-        $this->$db = $db;
-        $this->$user = $user;
-        $this->$course = $course;
-    }
-
-    public function procesa_respuesta( $req ){
+    public function procesa_respuesta( $req, $currenturl ){
         $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
         $CodigoCurso = isset($req['CodigoCurso']) ? $req['CodigoCurso'] : 0;
         $IdSesionAlumno = isset($req['IdSesionAlumno']) ? $req['IdSesionAlumno'] : 0;
@@ -53,24 +45,26 @@ class engine{
         $ZonaHoraria = isset($req['ZonaHoraria']) ? $req['ZonaHoraria'] : 0;
         $LineaCapacitacion = isset($req['LineaCapacitacion']) ? $req['LineaCapacitacion'] : 0;
         $GlosaError = isset($req['GlosaError']) ? $req['GlosaError'] : 0;
-
         if( $GlosaError > 0 ){
-            return $this->describe_error( $GlosaError );
+            return $this->describe_error( $GlosaError ) . '<br>' . $this->prepare_form( $currenturl );
         }
-
         $this->registra_asistencia_moodle( $req );
         return 'Asistencia SENCE Registrada!';
-
     }
 
     public function registra_asistencia_moodle( $req ){
-        // Registrara los datos del req en la base de datos;
-        return 0;
-
+        global $DB, $COURSE, $USER;
+        // $sesion = $req['IdSesionSence'];
+        // $fecha = $req['FechaHora'];
+        $data = [
+            'userid' => $USER->id,
+            'courseid' => $COURSE->id,
+            'timecreated' => 1592416900,
+        ];
+        return $DB->insert_record( 'block_sence' , $data);
     }
 
     public function describe_error($error){
-
         $errores_sence = [
             '100' =>  'Contraseña incorrecta.', //Contraseña incorrecta.
             '200' =>  'Parámetros vacíos.', //Parámetros vacíos.
@@ -93,53 +87,50 @@ class engine{
             '304' =>  'Error interno.', //Error interno.
             '305' =>  'Error interno.', //Error interno.
         ];
-
         return $errores_sence[$error] . '<br><style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
-
     }
 
     public function es_curso_sence(){
-        return true;
-        // Esta función debe revisar el campo codigo_sence_curso contenga un código registrado.
+        global $DB, $COURSE;
+        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso'])->id;
+        $this->codigo_sence = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
+        return strlen($this->codigo_sence) > 2  ? 1 : 0;
     }
 
     public function es_alumno_sence(){
-        return true;
-        // Busca el run del alumno
-        // Busca en codigo_sence_alumno si ese run se encuentra allí con el el dato del código
-
+        global $DB, $COURSE, $USER;
+        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno'])->id;
+        $this->alumnos = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
+        if( strlen($this->alumnos) < 7 ){
+            return false;
+        }
+        $this->alumnos = $this->parsear_codigo_alumnos($this->alumnos);
+        return isset($this->alumnos[strtolower($USER->idnumber)]);
     }
 
     public function es_alumno(){
-        return true;
+        global $COURSE;
+        $coursecontext = context_course::instance($COURSE->id);
+        return !has_capability('moodle/course:viewhiddensections', $coursecontext);
     }
 
     public function prepare_form( $currenturl ){
-        // Prepara el formulario para mandar a sence
-
-        $RutOtec = '76423250-k';
-        $Token = '3EEE939E-9A98-44E9-B6D5-4422D0832535';
-        $LineaCapacitacion = '3';
-        $RunAlumno = '26107640-3';
-        $IdSesionAlumno = '2';
-        $CodSence = '1237991108';
-        $CodigoCurso = '5911547';
-        $UrlRetoma = $currenturl;
-        $UrlError = $currenturl;
-
+        global $USER, $CFG;
         $urlInicio = 'https://sistemas.sence.cl/rcetest/Registro/';
-
-        return '<form  method="POST" action="'.$currenturl.'">
+        $RunAlumno = strtolower($USER->idnumber);
+        $CodigoCurso = $this->alumnos[ $RunAlumno ];
+        $IdSesionAlumno = '2';
+        return '<form  method="POST" action="'.$urlInicio.'">
                     <button type="submit">Iniciar Sesión</button>
                     <div style="display:none;">
-                        <input value="'.$RutOtec.'" type="text" name="RutOtec" class="form-control">
-                        <input value="'.$Token.'" type="text" name="Token" class="form-control">
-                        <input value="'.$LineaCapacitacion.'" type="text" name="LineaCapacitacion" class="form-control">
+                        <input value="'.$CFG->block_sence_rut.'" type="text" name="RutOtec" class="form-control">
+                        <input value="'.$CFG->block_sence_token.'" type="text" name="Token" class="form-control">
+                        <input value="'.$CFG->block_sence_lineacap.'" type="text" name="LineaCapacitacion" class="form-control">
                         <input value="'.$RunAlumno.'" type="text" name="RunAlumno" class="form-control">
                         <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
-                        <input value="'.$UrlRetoma.'" type="text" name="UrlRetoma" class="form-control">
-                        <input value="'.$UrlError.'" type="text" name="UrlError" class="form-control">
-                        <input value="'.$CodSence.'" type="text" name="CodSence" class="form-control">
+                        <input value="'.$currenturl.'" type="text" name="UrlRetoma" class="form-control">
+                        <input value="'.$currenturl.'" type="text" name="UrlError" class="form-control">
+                        <input value="'.$this->codigo_sence.'" type="text" name="CodSence" class="form-control">
                         <input value="'.$CodigoCurso.'" type="text" name="CodigoCurso" class="form-control">
                     </div>
                 </form>';
@@ -149,17 +140,32 @@ class engine{
         global $DB;
         $sence_curso_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso']);
         $sence_alumno_id = $DB->get_record('customfield_field', ['shortname' => 'codig_sence_alumno']);
-
         if( !$sence_curso_id && !$sence_alumno_id ){
             return false;
         }
-
         return true;
     }
 
     public function tiene_asistencia(){
-        global $USER, $COURSE;
-        return $COURSE->id == 2;
+        global $DB, $USER, $COURSE;
+        var_dump( $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] ) );
+        return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
     }
 
+    public function parsear_codigo_alumnos($stralumnos){
+        if( strlen($stralumnos) < 7 ){
+            return false;
+        }
+        $stralumnos = str_replace('<p>', '', $stralumnos );
+        $stralumnos = str_replace('</p>', ' ', $stralumnos );
+        $alumnos = explode(' ', $stralumnos);
+        $reult = [];
+        foreach($alumnos as $key => $alumno){
+            $exploded = explode(',', $alumno);
+            if(  count($exploded) == 2  ){
+                $result[$exploded[0]] = $exploded[1];
+            }
+        }
+        return $result;
+    }
 }
