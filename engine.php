@@ -33,7 +33,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class Engine{
 
-    private $alumnos, $codigo_sence;
+    private $alumnos;
+    private $urlInicio = 'https://sistemas.sence.cl/rcetest/Registro/';
+    private $urlRegistro = '#';
+    private $urlCambiaCus = '#';
+    private $urlActualiza = '#';
 
     public function procesa_respuesta( $req, $currenturl ){
         $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
@@ -66,35 +70,34 @@ class Engine{
 
     public function describe_error($error){
         $errores_sence = [
-            '100' =>  'Contraseña incorrecta.', //Contraseña incorrecta.
-            '200' =>  'Parámetros vacíos.', //Parámetros vacíos.
-            '201' =>  'Parámetro UrlError sin datos.', //Parámetro UrlError sin datos.
-            '202' =>  'Parámetro UrlError con formato incorrecto.', //Parámetro UrlError con formato incorrecto.
-            '203' =>  'Parámetro UrlRetoma con formato incorrecto.', //Parámetro UrlRetoma con formato incorrecto.
-            '204' =>  'Parámetro CodSence con formato incorrecto.', //Parámetro CodSence con formato incorrecto.
-            '205' =>  'Parámetro CodigoCurso con formato incorrecto.', //Parámetro CodigoCurso con formato incorrecto.
-            '206' =>  'Línea de capacitación con formato incorrecto.', //Línea de capacitación con formato incorrecto.
-            '207' =>  'Parámetro RunAlumno incorrecto.', //Parámetro RunAlumno incorrecto.
-            '208' =>  'Parámetro RunAlumno diferente al enviado por OTEC.', //Parámetro RunAlumno diferente al enviado por OTEC.
-            '209' =>  'Parámetro RutOtec incorrecto.', //Parámetro RutOtec incorrecto.
-            '210' =>  'Sesión caducada.', //Sesión caducada.
-            '211' =>  'Token incorrecto.', //Token incorrecto.
-            '212' =>  'Token caducado.', //Token caducado.
-            '300' =>  'Error interno.', //Error interno.
-            '301' =>  'Error interno.', //Error interno.
-            '302' =>  'Error interno.', //Error interno.
-            '303' =>  'Error interno.', //Error interno.
-            '304' =>  'Error interno.', //Error interno.
-            '305' =>  'Error interno.', //Error interno.
+            '100' =>  'Contraseña incorrecta.',
+            '200' =>  'Parámetros vacíos.',
+            '201' =>  'Parámetro UrlError sin datos.',
+            '202' =>  'Parámetro UrlError con formato incorrecto.',
+            '203' =>  'Parámetro UrlRetoma con formato incorrecto.',
+            '204' =>  'Parámetro CodSence con formato incorrecto.',
+            '205' =>  'Parámetro CodigoCurso con formato incorrecto.',
+            '206' =>  'Línea de capacitación con formato incorrecto.',
+            '207' =>  'Parámetro RunAlumno incorrecto.',
+            '208' =>  'Parámetro RunAlumno diferente al enviado por OTEC.',
+            '209' =>  'Parámetro RutOtec incorrecto.',
+            '210' =>  'Sesión caducada.',
+            '211' =>  'Token incorrecto.',
+            '212' =>  'Token caducado.',
+            '300' =>  'Error interno.',
+            '301' =>  'Error interno.',
+            '302' =>  'Error interno.',
+            '303' =>  'Error interno.',
+            '304' =>  'Error interno.',
+            '305' =>  'Error interno.',
         ];
         return $errores_sence[$error] . '<br><style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
     }
 
     public function es_curso_sence(){
         global $DB, $COURSE;
-        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso'])->id;
-        $this->codigo_sence = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
-        return strlen($this->codigo_sence) > 2  ? 1 : 0;
+        $category_id = $DB->get_record('course_categories', ['name' => 'sence'])->id;
+        return strlen($COURSE->idnumber) > 2  && $COURSE->category ==  $category_id;
     }
 
     public function es_alumno_sence(){
@@ -102,9 +105,11 @@ class Engine{
         $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno'])->id;
         $this->alumnos = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
         if( strlen($this->alumnos) < 7 ){
+            var_dump( $this->alumnos );
             return false;
         }
         $this->alumnos = $this->parsear_codigo_alumnos($this->alumnos);
+        var_dump( $this->alumnos );
         return isset($this->alumnos[strtolower($USER->idnumber)]);
     }
 
@@ -114,13 +119,18 @@ class Engine{
         return !has_capability('moodle/course:viewhiddensections', $coursecontext);
     }
 
+    public function tiene_run(){
+        global $USER;
+        $run = explode('-', $USER->idnumber );
+        return count($run) == 2;
+    }
+
     public function prepare_form( $currenturl ){
-        global $USER, $CFG;
-        $urlInicio = 'https://sistemas.sence.cl/rcetest/Registro/';
+        global $USER, $CFG, $COURSE;
         $RunAlumno = strtolower($USER->idnumber);
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
-        return '<form  method="POST" action="'.$urlInicio.'">
+        return '<form  method="POST" action="'.$this->urlInicio.'">
                     <button type="submit">Iniciar Sesión</button>
                     <div style="display:none;">
                         <input value="'.$CFG->block_sence_rut.'" type="text" name="RutOtec" class="form-control">
@@ -130,7 +140,7 @@ class Engine{
                         <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
                         <input value="'.$currenturl.'" type="text" name="UrlRetoma" class="form-control">
                         <input value="'.$currenturl.'" type="text" name="UrlError" class="form-control">
-                        <input value="'.$this->codigo_sence.'" type="text" name="CodSence" class="form-control">
+                        <input value="'.$COURSE->idnumber.'" type="text" name="CodSence" class="form-control">
                         <input value="'.$CodigoCurso.'" type="text" name="CodigoCurso" class="form-control">
                     </div>
                 </form>';
@@ -138,9 +148,8 @@ class Engine{
 
     public function existen_campos_sence(){
         global $DB;
-        $sence_curso_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_curso']);
-        $sence_alumno_id = $DB->get_record('customfield_field', ['shortname' => 'codig_sence_alumno']);
-        if( !$sence_curso_id && !$sence_alumno_id ){
+        $sence_alumno_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno']);
+        if( !$sence_alumno_id ){
             return false;
         }
         return true;

@@ -37,7 +37,6 @@ class block_sence extends block_base {
         $sence = new Engine();
         $this->content =  new stdClass;
 
-
         if( !$sence->existen_campos_sence() ){
             $this->content->text  = 'Los Custom Fields requeridos para este Pugin no están configurados';
             return $this->content;
@@ -50,6 +49,12 @@ class block_sence extends block_base {
 
         if( !$sence->es_alumno() ){
             $this->content->text  = 'Bienvenido '. $USER->firstname;
+            return $this->content;
+        }
+
+        if( !$sence->tiene_run() ){
+            $this->content->text  = 'RUT no configurado o incorrecto';
+            $this->content->footer ='<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
             return $this->content;
         }
 
@@ -74,8 +79,8 @@ class block_sence extends block_base {
 
     public function applicable_formats() {
         return array(
-                'site-index' => false,
                 'course-view' => true, 
+                'all' => false,
         );
       }
 }
