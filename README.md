@@ -19,4 +19,4 @@ Sugerencias para mejorar el plugin son bienvenidas, sientase libre de enviar un 
 
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
