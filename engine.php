@@ -176,10 +176,10 @@ class Engine{
     }
 
     public function formatea_html_error($string){
-        return '<div style="padding:5px; background-color:red;">'. $string .'</div>';
+        return '<div style="padding:5px; background-color:#ee928f; color:fff; border-radius:5px;">'. $string .'</div>';
     }
 
     public function formatea_html_correcto($string){
-        return '<div style="padding:5px; background-color:blue;">'. $string .'</div>';
+        return '<div style="padding:5px; background-color:#ebf2b8; border-radius:5px;">'. $string .'</div>';
     }
 }
