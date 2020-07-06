@@ -11,7 +11,7 @@ class block_sence_edit_form extends block_edit_form {
 
     $attributes = ['size' => '10', 'maxlength' => '10'];
 
-    $mform->addElement('select', 'config_lineadecap', get_string('lineasdecap', 'block_sence'), $lineascap);
+    $mform->addElement('select', 'config_lineadecap', get_string('lineadecap', 'block_sence'), $lineascap);
 
     $mform->disabledIf('config_codigocurso', 'config_lineasdecap', 'eq', 1);
 

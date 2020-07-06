@@ -18,4 +18,4 @@ $string['sence:myaddinstance'] = 'Integrar SENCE';
 $string['sence:addinstance'] = 'Integrar SENCE';
 
 $string['error_campos'] = 'El código SENCE del curso no esta configurado o no es correcto';
-$string['error_campos'] = 'El código SENCE del curso no esta configurado o no es correcto';
+$string['error_run'] = 'RUT no configurado o incorrecto';
