@@ -94,22 +94,18 @@ class Engine{
         return $errores_sence[$error] . '<br><style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
     }
 
-    public function es_curso_sence(){
-        global $DB, $COURSE;
-        $category_id = $DB->get_record('course_categories', ['name' => 'sence'])->id;
-        return strlen($COURSE->idnumber) > 2  && $COURSE->category ==  $category_id;
-    }
-
     public function es_alumno_sence(){
         global $DB, $COURSE, $USER;
-        $field_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno'])->id;
-        $this->alumnos = $DB->get_record( 'customfield_data', ['instanceid'=>  $COURSE->id, 'fieldid' => $field_id] )->value;
-        if( strlen($this->alumnos) < 7 ){
-            var_dump( $this->alumnos );
-            return false;
-        }
-        $this->alumnos = $this->parsear_codigo_alumnos($this->alumnos);
-        var_dump( $this->alumnos );
+
+        $coursecontext = context_course::instance($COURSE->id);
+        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
+        $blockinstance = block_instance('sence', $blockrecord);
+
+        var_dump( $blockinstance->config->alumnos );
+
+        $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
+
+
         return isset($this->alumnos[strtolower($USER->idnumber)]);
     }
 
@@ -147,34 +143,43 @@ class Engine{
     }
 
     public function existen_campos_sence(){
-        global $DB;
-        $sence_alumno_id = $DB->get_record('customfield_field', ['shortname' => 'codigo_sence_alumno']);
-        if( !$sence_alumno_id ){
-            return false;
-        }
-        return true;
+        global $DB, $COURSE;
+
+        $coursecontext = context_course::instance($COURSE->id);
+        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
+        $blockinstance = block_instance('sence', $blockrecord);
+
+        return strlen($blockinstance->config->codigocurso) > 5;
     }
 
     public function tiene_asistencia(){
         global $DB, $USER, $COURSE;
-        var_dump( $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] ) );
+        // var_dump( $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] ) );
         return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
     }
 
     public function parsear_codigo_alumnos($stralumnos){
+
         if( strlen($stralumnos) < 7 ){
             return false;
         }
-        $stralumnos = str_replace('<p>', '', $stralumnos );
-        $stralumnos = str_replace('</p>', ' ', $stralumnos );
-        $alumnos = explode(' ', $stralumnos);
+        $alumnos = explode(',', $stralumnos);
         $reult = [];
         foreach($alumnos as $key => $alumno){
-            $exploded = explode(',', $alumno);
+            $exploded = explode(' ', $alumno);
             if(  count($exploded) == 2  ){
                 $result[$exploded[0]] = $exploded[1];
             }
         }
         return $result;
+
+    }
+
+    public function formatea_html_error($string){
+        return '<div style="padding:5px; background-color:red;">'. $string .'</div>';
+    }
+
+    public function formatea_html_correcto($string){
+        return '<div style="padding:5px; background-color:blue;">'. $string .'</div>';
     }
 }

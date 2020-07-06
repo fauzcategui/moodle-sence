@@ -34,36 +34,32 @@ class block_sence extends block_base {
     public function get_content() {
         global $USER;
 
+
         $sence = new Engine();
         $this->content =  new stdClass;
 
         if( !$sence->existen_campos_sence() ){
-            $this->content->text  = 'Los Custom Fields requeridos para este Pugin no están configurados';
-            return $this->content;
-        }
-
-        if( !$sence->es_curso_sence() ){
-            $this->content->text  = 'Este curso no tiene código SENCE';
+            $this->content->text  = $sence->formatea_html_error( get_string('error_campos', 'block_sence') );
             return $this->content;
         }
 
         if( !$sence->es_alumno() ){
-            $this->content->text  = 'Bienvenido '. $USER->firstname;
+            $this->content->text  = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' ' . $USER->firstname; )
             return $this->content;
         }
 
         if( !$sence->tiene_run() ){
-            $this->content->text  = 'RUT no configurado o incorrecto';
+            $this->content->text  = $sence->formatea_html_error( get_string('error_run', 'block_sence') );
             $this->content->footer ='<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
             return $this->content;
         }
 
         if( !$sence->es_alumno_sence() ){
-            $this->content->text  = 'Bienvenido '. $USER->firstname;
+            $this->content->text  = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' ' . $USER->firstname; )
             return $this->content;
         }
         if( $sence->tiene_asistencia() ){
-            $this->content = 'Bienvenido ' . $USER->firstname . '<br>¡Ya registraste tu asistencia!';
+            $this->content = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' '  . $USER->firstname . '<br>¡Ya registraste tu asistencia!'; )
             return $this->content;
         }
 

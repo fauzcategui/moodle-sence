@@ -4,7 +4,6 @@ Plugin desarrollado para que Organismos Técnicos de Capacitación implementen l
 ## Descarga
 [Versión Estable](#)
 
-
 ## Configuración
 El primer paso antes de instalar el plugin es tener a la mano lo siguiente:
 * RUT de la Otec
@@ -12,11 +11,8 @@ El primer paso antes de instalar el plugin es tener a la mano lo siguiente:
 
 Video con instrucciones [aquí](https://youtube.com)
 
-
-
 ## Contribuciones
 Sugerencias para mejorar el plugin son bienvenidas, sientase libre de enviar un pull request o de abrir un issue para cambios más grandes.
-
 
 ## License
 [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
