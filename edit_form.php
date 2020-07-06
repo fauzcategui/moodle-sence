@@ -20,7 +20,7 @@ class block_sence_edit_form extends block_edit_form {
 
     $mform->addElement('advcheckbox', 'config_bloqueacurso', get_string('permit', 'block_sence') );
 
-    $mform->addElement('textarea', 'config_alumnos', get_string('confalumnos', 'block_sence'), 'wrap="virtual" rows="8" cols="50"');
+    $mform->addElement('textarea', 'config_alumnos', get_string('confalumnos', 'block_sence'),'Instrucciones de como agregar a los alumnos' ,'wrap="virtual" rows="8" cols="50"');
     $mform->setType('config_alumnos', PARAM_TEXT);
     }
 }

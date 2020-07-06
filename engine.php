@@ -101,8 +101,6 @@ class Engine{
         $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
         $blockinstance = block_instance('sence', $blockrecord);
 
-        var_dump( $blockinstance->config->alumnos );
-
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
 
 
@@ -176,10 +174,10 @@ class Engine{
     }
 
     public function formatea_html_error($string){
-        return '<div style="padding:5px; background-color:#ee928f; color:fff; border-radius:5px;">'. $string .'</div>';
+        return '<div style="padding:5px; background-color:#ee928f; color:fff; border-radius:10px;">'. $string .'</div>';
     }
 
     public function formatea_html_correcto($string){
-        return '<div style="padding:5px; background-color:#ebf2b8; border-radius:5px;">'. $string .'</div>';
+        return '<div style="padding:5px; background-color:#ebf2b8; border-radius:10px;">'. $string .'</div>';
     }
 }

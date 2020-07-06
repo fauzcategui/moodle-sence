@@ -14,6 +14,8 @@ $string['pluginname'] = 'Asistencia Sence';
 $string['bienvenido'] = 'Bienvenido';
 $string['codigocurso'] = 'Código SENCE del Curso';
 $string['lineadecap'] = 'Líneas de Capacitación';
+$string['confalumno'] = 'Lista de Alumnos ';
+$string['permit'] = 'Al tildar esta opción estarás permitiendo que alumnos que no esten en el listado inferior puedan ver el curso';
 $string['sence:myaddinstance'] = 'Integrar SENCE';
 $string['sence:addinstance'] = 'Integrar SENCE';
 
