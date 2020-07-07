@@ -113,7 +113,10 @@ class Engine{
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
         $this->lineadecap = $blockinstance->config->lineadecap;
 
-        return isset($this->alumnos[strtolower($USER->idnumber)]);
+        var_dump( $this->alumnos );
+        // var_dump( $this->alumnos[strtolower($USER->idnumber)] );
+
+        return array_key_exists( strtolower($USER->idnumber), $this->alumnos);
     }
 
     public function es_alumno(){
@@ -158,30 +161,30 @@ class Engine{
         $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
         $blockinstance = block_instance('sence', $blockrecord);
         
-        
-        return strlen($blockinstance->config->codigocurso) > 5;
+        if( isset( $blockinstance->config ) ){
+            return strlen($blockinstance->config->codigocurso) > 5;
+        }
+
+        return false;
     }
 
     public function tiene_asistencia(){
         global $DB, $USER, $COURSE;
-        // var_dump( $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] ) );
         return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
     }
 
     public function parsear_codigo_alumnos($stralumnos){
 
-        if( strlen($stralumnos) < 7 ){
-            return false;
-        }
-        $alumnos = explode(',', $stralumnos);
-        $reult = [];
-        foreach($alumnos as $key => $alumno){
-            $exploded = explode(' ', $alumno);
-            if(  count($exploded) == 2  ){
-                $result[$exploded[0]] = $exploded[1];
+        preg_match_all('/\d*-\d\s\d*/', $stralumnos, $alumnos );
+        if( ! count($alumnos[0]) < 1 ){
+            $result = [];
+            foreach($alumnos[0] as $alumno){
+                $exploded = explode(' ', $alumno);
+                $result[ $exploded[0] ] = $exploded[1];
             }
+            return $result;
         }
-        return $result;
+        return false;
 
     }
 
