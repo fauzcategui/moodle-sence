@@ -175,7 +175,7 @@ class Engine{
 
     public function parsear_codigo_alumnos($stralumnos){
 
-        preg_match_all('/\d*-\d\s\d*/', $stralumnos, $alumnos );
+        preg_match_all('/\d*-[0-9kK]\s\d*/', $stralumnos, $alumnos );
         if( ! count($alumnos[0]) < 1 ){
             $result = [];
             foreach($alumnos[0] as $alumno){
