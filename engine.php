@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class Engine{
 
     private $alumnos;
+    private $lineadecap;
     private $urlInicio = 'https://sistemas.sence.cl/rcetest/Registro/';
     private $urlRegistro = '#';
     private $urlCambiaCus = '#';
@@ -58,14 +59,21 @@ class Engine{
 
     public function registra_asistencia_moodle( $req ){
         global $DB, $COURSE, $USER;
-        // $sesion = $req['IdSesionSence'];
-        // $fecha = $req['FechaHora'];
+
         $data = [
             'userid' => $USER->id,
             'courseid' => $COURSE->id,
-            'timecreated' => 1592416900,
+            'timecreated' => time(),
         ];
-        return $DB->insert_record( 'block_sence' , $data);
+
+        if( ! $DB->get_record( 'block_sence', [ 'userid' => $USER->id, 'courseid' => $COURSE->id, ] ) ){
+            return $DB->insert_record( 'block_sence' , $data);
+        }
+
+    }
+
+    public function style_blocker(){
+        return '<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
     }
 
     public function describe_error($error){
@@ -91,7 +99,8 @@ class Engine{
             '304' =>  'Error interno.',
             '305' =>  'Error interno.',
         ];
-        return $errores_sence[$error] . '<br><style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
+
+        return $errores_sence[$error] . '<br>' . $this->style_blocker();
     }
 
     public function es_alumno_sence(){
@@ -102,7 +111,7 @@ class Engine{
         $blockinstance = block_instance('sence', $blockrecord);
 
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
-
+        $this->lineadecap = $blockinstance->config->lineadecap;
 
         return isset($this->alumnos[strtolower($USER->idnumber)]);
     }
@@ -125,11 +134,13 @@ class Engine{
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
         return '<form  method="POST" action="'.$this->urlInicio.'">
-                    <button type="submit">Iniciar Sesión</button>
+                    <button type="submit" style="padding:10px;background:#0056a8;color:#fff;font-weight:700;border-radius:5px;border:0px;">
+                        Iniciar Sesión
+                    </button>
                     <div style="display:none;">
                         <input value="'.$CFG->block_sence_rut.'" type="text" name="RutOtec" class="form-control">
                         <input value="'.$CFG->block_sence_token.'" type="text" name="Token" class="form-control">
-                        <input value="'.$CFG->block_sence_lineacap.'" type="text" name="LineaCapacitacion" class="form-control">
+                        <input value="'.$this->lineadecap.'" type="text" name="LineaCapacitacion" class="form-control">
                         <input value="'.$RunAlumno.'" type="text" name="RunAlumno" class="form-control">
                         <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
                         <input value="'.$currenturl.'" type="text" name="UrlRetoma" class="form-control">
@@ -146,7 +157,8 @@ class Engine{
         $coursecontext = context_course::instance($COURSE->id);
         $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
         $blockinstance = block_instance('sence', $blockrecord);
-
+        
+        
         return strlen($blockinstance->config->codigocurso) > 5;
     }
 
@@ -174,10 +186,10 @@ class Engine{
     }
 
     public function formatea_html_error($string){
-        return '<div style="padding:5px; background-color:#ee928f; color:fff; border-radius:10px;">'. $string .'</div>';
+        return '<div style="padding:10px; background-color:#ee928f; color:fff; border-radius:5px;">'. $string .'</div>';
     }
 
     public function formatea_html_correcto($string){
-        return '<div style="padding:5px; background-color:#ebf2b8; border-radius:10px;">'. $string .'</div>';
+        return '<div style="padding:10px; background-color:#ebf2b8; border-radius:5px;">'. $string .'</div>';
     }
 }

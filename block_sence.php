@@ -50,7 +50,7 @@ class block_sence extends block_base {
 
         if( !$sence->tiene_run() ){
             $this->content->text  = $sence->formatea_html_error( get_string('error_run', 'block_sence') );
-            $this->content->footer ='<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
+            $this->content->footer = $sence->style_blocker();
             return $this->content;
         }
 
@@ -59,7 +59,7 @@ class block_sence extends block_base {
             return $this->content;
         }
         if( $sence->tiene_asistencia() ){
-            $this->content = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' '  . $USER->firstname . '<br>¡Ya registraste tu asistencia!' );
+            $this->content->text = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' '  . $USER->firstname . '<br>¡Ya registraste tu asistencia!' );
             return $this->content;
         }
 
@@ -69,7 +69,7 @@ class block_sence extends block_base {
         }
 
         $this->content->text = $sence->prepare_form( $this->page->url );
-        $this->content->footer ='<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
+        $this->content->footer = $sence->style_blocker();
         return $this->content;
     }
 
