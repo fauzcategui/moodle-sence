@@ -42,7 +42,7 @@ class block_sence extends block_base {
             $this->content->text  = $sence->formatea_html_error( get_string('error_campos', 'block_sence') );
             return $this->content;
         }
-
+        
         if( !$sence->es_alumno() ){
             $this->content->text  = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' ' . $USER->firstname );
             return $this->content;
@@ -56,6 +56,7 @@ class block_sence extends block_base {
 
         if( !$sence->es_alumno_sence() ){
             $this->content->text  = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' ' . $USER->firstname );
+            $this->content->footer = $sence->exige_asistencia() ? $sence->style_blocker() : '';
             return $this->content;
         }
         if( $sence->tiene_asistencia() ){

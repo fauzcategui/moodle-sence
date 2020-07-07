@@ -33,9 +33,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class Engine{
 
-    private $alumnos;
+    private $alumnos = [];
+    private $CodSence;
     private $lineadecap;
-    private $urlInicio = 'https://sistemas.sence.cl/rcetest/Registro/';
+    private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
+    private $urlInicio = 'https://sistemas.sence.cl/rce/Registro/IniciarSesion';
     private $urlRegistro = '#';
     private $urlCambiaCus = '#';
     private $urlActualiza = '#';
@@ -53,11 +55,11 @@ class Engine{
         if( $GlosaError > 0 ){
             return $this->describe_error( $GlosaError ) . '<br>' . $this->prepare_form( $currenturl );
         }
-        $this->registra_asistencia_moodle( $req );
-        return 'Asistencia SENCE Registrada!';
+        $this->registra_asistencia_moodle();
+        return $this->formatea_html_correcto('Asistencia SENCE Registrada!');
     }
 
-    public function registra_asistencia_moodle( $req ){
+    public function registra_asistencia_moodle(){
         global $DB, $COURSE, $USER;
 
         $data = [
@@ -100,7 +102,12 @@ class Engine{
             '305' =>  'Error interno.',
         ];
 
-        return $errores_sence[$error] . '<br>' . $this->style_blocker();
+        if( isset( $errores_sence[$error] )  ){
+            return $this->formatea_html_error( $errores_sence[$error] ) . '<br>' . $this->style_blocker();
+        }
+
+        return $this->formatea_html_error('Error desconocido. <br> Contacte a la Otec');
+
     }
 
     public function es_alumno_sence(){
@@ -112,10 +119,7 @@ class Engine{
 
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
         $this->lineadecap = $blockinstance->config->lineadecap;
-
-        var_dump( $this->alumnos );
-        // var_dump( $this->alumnos[strtolower($USER->idnumber)] );
-
+        
         return array_key_exists( strtolower($USER->idnumber), $this->alumnos);
     }
 
@@ -136,6 +140,8 @@ class Engine{
         $RunAlumno = strtolower($USER->idnumber);
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
+        $CodSence = $this->CodSence;
+
         return '<form  method="POST" action="'.$this->urlInicio.'">
                     <button type="submit" style="padding:10px;background:#0056a8;color:#fff;font-weight:700;border-radius:5px;border:0px;">
                         Iniciar Sesión
@@ -148,7 +154,7 @@ class Engine{
                         <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
                         <input value="'.$currenturl.'" type="text" name="UrlRetoma" class="form-control">
                         <input value="'.$currenturl.'" type="text" name="UrlError" class="form-control">
-                        <input value="'.$COURSE->idnumber.'" type="text" name="CodSence" class="form-control">
+                        <input value="'.$CodSence.'" type="text" name="CodSence" class="form-control">
                         <input value="'.$CodigoCurso.'" type="text" name="CodigoCurso" class="form-control">
                     </div>
                 </form>';
@@ -162,7 +168,8 @@ class Engine{
         $blockinstance = block_instance('sence', $blockrecord);
         
         if( isset( $blockinstance->config ) ){
-            return strlen($blockinstance->config->codigocurso) > 5;
+            $this->CodSence = $blockinstance->config->codigocurso;
+            return strlen( $this->CodSence ) > 5;
         }
 
         return false;
@@ -184,6 +191,21 @@ class Engine{
             }
             return $result;
         }
+        return [];
+
+    }
+
+    public function exige_asistencia(){
+        global $DB, $COURSE;
+
+        $coursecontext = context_course::instance($COURSE->id);
+        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
+        $blockinstance = block_instance('sence', $blockrecord);
+        
+        if( isset( $blockinstance->config ) ){
+            return $blockinstance->config->bloqueacurso;
+        }
+
         return false;
 
     }
