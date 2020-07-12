@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class Engine{
 
     private $alumnos = [];
+    private $runAlumno;
     private $CodSence;
     private $lineadecap;
     private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
@@ -120,7 +121,7 @@ class Engine{
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
         $this->lineadecap = $blockinstance->config->lineadecap;
         
-        return array_key_exists( strtolower($USER->idnumber), $this->alumnos);
+        return array_key_exists( strtolower($this->runAlumno  ), $this->alumnos);
     }
 
     public function es_alumno(){
@@ -131,13 +132,24 @@ class Engine{
 
     public function tiene_run(){
         global $USER;
-        $run = explode('-', $USER->idnumber );
-        return count($run) == 2;
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->username) ){
+            $this->runAlumno = strtolower($USER->username);
+            return true;
+        }
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->idnumber) ){
+            $this->runAlumno = strtolower($USER->idnumber);
+            return true;
+        }
+
+        return false;
+
     }
 
     public function prepare_form( $currenturl ){
         global $USER, $CFG, $COURSE;
-        $RunAlumno = strtolower($USER->idnumber);
+        $RunAlumno = $this->runAlumno;
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
         $CodSence = $this->CodSence;
