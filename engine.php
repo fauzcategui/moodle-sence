@@ -233,7 +233,7 @@ class Engine{
     public function print_logo(){
         global $CFG;
         return '<div style="width:100%; text-align:center;">
-                    <image style="width:50%;" src="'.$CFG->wwwroot.'/blocks/sence/assets/sence-logo.svg">
+                    <image style="width:50%;" src="'.$CFG->wwwroot.'/blocks/sence/assets/sence-logo.webp">
                 </div>';
     }
 }
