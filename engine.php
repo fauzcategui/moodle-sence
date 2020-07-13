@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class Engine{
 
     private $alumnos = [];
+    private $runAlumno;
     private $CodSence;
     private $lineadecap;
     private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
@@ -53,7 +54,7 @@ class Engine{
         $LineaCapacitacion = isset($req['LineaCapacitacion']) ? $req['LineaCapacitacion'] : 0;
         $GlosaError = isset($req['GlosaError']) ? $req['GlosaError'] : 0;
         if( $GlosaError > 0 ){
-            return $this->describe_error( $GlosaError ) . '<br>' . $this->prepare_form( $currenturl );
+            return $this->describe_error( $GlosaError ) . $this->prepare_form( $currenturl );
         }
         $this->registra_asistencia_moodle();
         return $this->formatea_html_correcto('Asistencia SENCE Registrada!');
@@ -120,7 +121,7 @@ class Engine{
         $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
         $this->lineadecap = $blockinstance->config->lineadecap;
         
-        return array_key_exists( strtolower($USER->idnumber), $this->alumnos);
+        return array_key_exists( strtolower($this->runAlumno  ), $this->alumnos);
     }
 
     public function es_alumno(){
@@ -131,18 +132,29 @@ class Engine{
 
     public function tiene_run(){
         global $USER;
-        $run = explode('-', $USER->idnumber );
-        return count($run) == 2;
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->username) ){
+            $this->runAlumno = strtolower($USER->username);
+            return true;
+        }
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->idnumber) ){
+            $this->runAlumno = strtolower($USER->idnumber);
+            return true;
+        }
+
+        return false;
+
     }
 
     public function prepare_form( $currenturl ){
         global $USER, $CFG, $COURSE;
-        $RunAlumno = strtolower($USER->idnumber);
+        $RunAlumno = $this->runAlumno;
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
         $CodSence = $this->CodSence;
 
-        return '<form  method="POST" action="'.$this->urlInicio.'">
+        return '<form style="text-align:center;" method="POST" action="'.$this->urlInicio.'">
                     <button type="submit" style="padding:10px;background:#0056a8;color:#fff;font-weight:700;border-radius:5px;border:0px;">
                         Iniciar Sesión
                     </button>
@@ -216,5 +228,12 @@ class Engine{
 
     public function formatea_html_correcto($string){
         return '<div style="padding:10px; background-color:#ebf2b8; border-radius:5px;">'. $string .'</div>';
+    }
+
+    public function print_logo(){
+        global $CFG;
+        return '<div style="width:100%; text-align:center;">
+                    <image style="width:50%;" src="'.$CFG->wwwroot.'/blocks/sence/assets/sence-logo.webp">
+                </div>';
     }
 }
