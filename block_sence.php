@@ -43,9 +43,8 @@ class block_sence extends block_base {
             $this->content->footer = $sence->print_logo();
             return $this->content;
         }
-        
+
         if( !$sence->es_alumno() ){
-            $this->content->text  = $sence->formatea_html_correcto( get_string('bienvenido', 'block_sence'). ' ' . $USER->firstname );
             $this->content->footer = $sence->print_logo();
             return $this->content;
         }
@@ -69,7 +68,7 @@ class block_sence extends block_base {
 
         if( isset( $_POST['RunAlumno'] ) ){
             $this->content->text  = $sence->procesa_respuesta( $_POST, $this->page->url );
-            $this->content->footer = $sence->print_logo();
+            $this->content->footer = $sence->print_logo() . ( $sence->lock_status ? $sence->style_blocker(): '' );
             return $this->content;
         }
 

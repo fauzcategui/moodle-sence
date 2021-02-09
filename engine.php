@@ -43,6 +43,8 @@ class Engine{
     private $urlCambiaCus = '#';
     private $urlActualiza = '#';
 
+    public $lock_status = 1;
+
     public function procesa_respuesta( $req, $currenturl ){
         $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
         $CodigoCurso = isset($req['CodigoCurso']) ? $req['CodigoCurso'] : 0;
@@ -54,9 +56,11 @@ class Engine{
         $LineaCapacitacion = isset($req['LineaCapacitacion']) ? $req['LineaCapacitacion'] : 0;
         $GlosaError = isset($req['GlosaError']) ? $req['GlosaError'] : 0;
         if( $GlosaError > 0 ){
+            $this->lock_status = 1;
             return $this->describe_error( $GlosaError ) . $this->prepare_form( $currenturl );
         }
         $this->registra_asistencia_moodle();
+        $this->lock_status = 0;
         return $this->formatea_html_correcto('Asistencia SENCE Registrada!');
     }
 

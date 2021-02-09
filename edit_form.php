@@ -5,7 +5,7 @@ class block_sence_edit_form extends block_edit_form {
         $mform->addElement('header', 'config_header', get_string('blocksettings', 'block'));
         
         $lineascap = [
-            // 1 => 'Programas Sociales o Becas Labores (1)',
+            1 => 'Programas Sociales o Becas Labores (1)',
             3 => 'Impulsa Personas (3)',
         ];
 
