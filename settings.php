@@ -3,13 +3,12 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_sence_token', 'Token Sence',
-                       'Token generado en la web SENCE', '', PARAM_RAW));
 
-    $settings->add(new admin_setting_configtext('block_sence_rut', 'RUT OTEC',
-                       'RUT de la OTEC Registrada en SENCE', '', PARAM_RAW));
+    $CFG->cache = false;
 
-    // $settings->add(new admin_setting_configtext('block_sence_email', 'Email',
-    // 'Email para reportes (Opcional)', '', PARAM_RAW));
+    $PAGE->requires->js('/blocks/sence/sence.js');
+
+     $settings->add(new admin_setting_configtextarea('sence_block/otecs', 'RUTs y Tokens de Otecs',
+    'Ingresar Rut de Otecs Acá', '', PARAM_RAW));
 
 }

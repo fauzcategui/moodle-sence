@@ -42,8 +42,17 @@ class Engine{
     private $urlRegistro = '#';
     private $urlCambiaCus = '#';
     private $urlActualiza = '#';
+    private $blockinstance;
 
     public $lock_status = 1;
+
+    function __construct(){
+        global $DB, $COURSE;
+
+        $coursecontext = context_course::instance($COURSE->id);
+        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
+        $this->blockinstance = block_instance('sence', $blockrecord);
+    }
 
     public function procesa_respuesta( $req, $currenturl ){
         $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
@@ -116,15 +125,9 @@ class Engine{
     }
 
     public function es_alumno_sence(){
-        global $DB, $COURSE, $USER;
+        $this->alumnos = $this->parsear_codigo_alumnos( $this->blockinstance->config->alumnos );
+        $this->lineadecap = $this->blockinstance->config->lineadecap;
 
-        $coursecontext = context_course::instance($COURSE->id);
-        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
-        $blockinstance = block_instance('sence', $blockrecord);
-
-        $this->alumnos = $this->parsear_codigo_alumnos( $blockinstance->config->alumnos );
-        $this->lineadecap = $blockinstance->config->lineadecap;
-        
         return array_key_exists( strtolower($this->runAlumno  ), $this->alumnos);
     }
 
@@ -152,19 +155,20 @@ class Engine{
     }
 
     public function prepare_form( $currenturl ){
-        global $USER, $CFG, $COURSE;
         $RunAlumno = $this->runAlumno;
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
         $CodSence = $this->CodSence;
+        $rut = $this->blockinstance->config->otec;
+        $token = $this->blockinstance->config->otec;
 
         return '<form style="text-align:center;" method="POST" action="'.$this->urlInicio.'">
                     <button type="submit" style="padding:10px;background:#0056a8;color:#fff;font-weight:700;border-radius:5px;border:0px;">
                         Iniciar Sesión
                     </button>
-                    <div style="display:none;">
-                        <input value="'.$CFG->block_sence_rut.'" type="text" name="RutOtec" class="form-control">
-                        <input value="'.$CFG->block_sence_token.'" type="text" name="Token" class="form-control">
+                    <div>
+                        <input value="'. $rut.'" type="text" name="RutOtec" class="form-control">
+                        <input value="'. $token.'" type="text" name="Token" class="form-control">
                         <input value="'.$this->lineadecap.'" type="text" name="LineaCapacitacion" class="form-control">
                         <input value="'.$RunAlumno.'" type="text" name="RunAlumno" class="form-control">
                         <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
@@ -177,14 +181,8 @@ class Engine{
     }
 
     public function existen_campos_sence(){
-        global $DB, $COURSE;
-
-        $coursecontext = context_course::instance($COURSE->id);
-        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
-        $blockinstance = block_instance('sence', $blockrecord);
-        
-        if( isset( $blockinstance->config ) ){
-            $this->CodSence = $blockinstance->config->codigocurso;
+        if( isset( $this->blockinstance->config ) ){
+            $this->CodSence = $this->blockinstance->config->codigocurso;
             return strlen( $this->CodSence ) > 5;
         }
 
@@ -212,14 +210,8 @@ class Engine{
     }
 
     public function exige_asistencia(){
-        global $DB, $COURSE;
-
-        $coursecontext = context_course::instance($COURSE->id);
-        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
-        $blockinstance = block_instance('sence', $blockrecord);
-        
-        if( isset( $blockinstance->config ) ){
-            return $blockinstance->config->bloqueacurso;
+        if( isset( $this->blockinstance->config ) ){
+            return $this->blockinstance->config->bloqueacurso;
         }
 
         return false;
@@ -239,5 +231,24 @@ class Engine{
         return '<div style="width:100%; text-align:center;">
                     <image style="width:50%;" src="'.$CFG->wwwroot.'/blocks/sence/assets/sence-logo.webp">
                 </div>';
+    }
+
+    static function get_otecs(){
+        $otecs = get_config('sence_block', 'otecs');
+        $otecs = json_decode( $otecs, true );
+
+        $options = [
+            'none' => 'Seleccione una OTEC'
+        ];
+
+        if( count($otecs) > 0){
+            foreach( $otecs as $otec ){
+                $value = "{$otec['rut']};{$otec['token']}";
+                $options[ $value ] = "{$otec['name']} | {$otec['rut']}";
+            }
+        }
+
+        return $options;
+
     }
 }

@@ -1,15 +1,23 @@
 <?php
+
 class block_sence_edit_form extends block_edit_form {
     protected function specific_definition($mform) {
+        global $PAGE;
+
+        $PAGE->requires->js('/blocks/sence/sence.js');
 
         $mform->addElement('header', 'config_header', get_string('blocksettings', 'block'));
-        
+
+        $attributes = ['size' => '10', 'maxlength' => '10'];
+
+        $otecs = Engine::get_otecs();
+
+        $mform->addElement('select', 'config_otec', get_string('lineadecap', 'block_sence'), $otecs);
+
         $lineascap = [
             1 => 'Programas Sociales o Becas Labores (1)',
             3 => 'Impulsa Personas (3)',
         ];
-
-        $attributes = ['size' => '10', 'maxlength' => '10'];
 
         $mform->addElement('select', 'config_lineadecap', get_string('lineadecap', 'block_sence'), $lineascap);
 

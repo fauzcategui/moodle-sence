@@ -29,11 +29,12 @@ class block_sence extends block_base {
 
     public function instance_allow_multiple() {
         return false;
-      }
+    }
 
     public function get_content() {
-        global $USER;
+        global $USER, $PAGE;
 
+        $PAGE->requires->js('/blocks/sence/sence.js');
 
         $sence = new Engine();
         $this->content =  new stdClass;
@@ -79,8 +80,8 @@ class block_sence extends block_base {
 
     public function applicable_formats() {
         return array(
-                'course-view' => true, 
+                'course-view' => true,
                 'all' => false,
         );
-      }
+    }
 }
