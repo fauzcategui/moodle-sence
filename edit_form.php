@@ -4,7 +4,7 @@ class block_sence_edit_form extends block_edit_form {
     protected function specific_definition($mform) {
         global $PAGE;
 
-        $PAGE->requires->js('/blocks/sence/sence.js');
+        $PAGE->requires->js('/blocks/sence/js/edit_form.js');
 
         $mform->addElement('header', 'config_header', get_string('blocksettings', 'block'));
 
@@ -12,7 +12,7 @@ class block_sence_edit_form extends block_edit_form {
 
         $otecs = Engine::get_otecs();
 
-        $mform->addElement('select', 'config_otec', get_string('lineadecap', 'block_sence'), $otecs);
+        $mform->addElement('select', 'config_otec', 'Selecciona OTEC', $otecs);
 
         $lineascap = [
             1 => 'Programas Sociales o Becas Labores (1)',
@@ -30,6 +30,8 @@ class block_sence_edit_form extends block_edit_form {
 
         $mform->addElement('textarea', 'config_alumnos', get_string('confalumnos', 'block_sence'), 'wrap="virtual" rows="8" cols="50"');
         $mform->setType('config_alumnos', PARAM_TEXT);
+
+        $mform->addElement('advcheckbox', 'config_senceRedirect', 'Redireccionar Alumno a otra plataforma una vez iniciado sesión' );
 
     }
 }

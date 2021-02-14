@@ -1,4 +1,3 @@
-console.log('cargadooo js')
 let settings_otecs = document.getElementById('id_s_sence_block_otecs')
 if( settings_otecs ){
     document.getElementsByClassName('form-defaultinfo')[0].style.display = 'none'

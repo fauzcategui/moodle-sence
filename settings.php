@@ -4,11 +4,11 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
 
-    $CFG->cache = false;
+    $PAGE->requires->js('/blocks/sence/js/settings.js');
 
-    $PAGE->requires->js('/blocks/sence/sence.js');
-
-     $settings->add(new admin_setting_configtextarea('sence_block/otecs', 'RUTs y Tokens de Otecs',
-    'Ingresar Rut de Otecs Acá', '', PARAM_RAW));
+    /**
+     * Campor de Texto ocultado por JavaScript para enviar el JSON de Otecs a la Base de Datos
+     */
+    $settings->add(new admin_setting_configtextarea('sence_block/otecs', '', '', '', PARAM_RAW));
 
 }

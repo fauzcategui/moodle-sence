@@ -159,25 +159,27 @@ class Engine{
         $CodigoCurso = $this->alumnos[ $RunAlumno ];
         $IdSesionAlumno = '2';
         $CodSence = $this->CodSence;
-        $rut = $this->blockinstance->config->otec;
-        $token = $this->blockinstance->config->otec;
 
-        return '<form style="text-align:center;" method="POST" action="'.$this->urlInicio.'">
-                    <button type="submit" style="padding:10px;background:#0056a8;color:#fff;font-weight:700;border-radius:5px;border:0px;">
+        $t = explode(';', $this->blockinstance->config->otec);
+        $rut = $t[0];
+        $token = $t[1];
+
+        return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
+                    <button type='submit' class='btn btn-primary' style='width:100%'>
                         Iniciar Sesión
                     </button>
-                    <div>
-                        <input value="'. $rut.'" type="text" name="RutOtec" class="form-control">
-                        <input value="'. $token.'" type="text" name="Token" class="form-control">
-                        <input value="'.$this->lineadecap.'" type="text" name="LineaCapacitacion" class="form-control">
-                        <input value="'.$RunAlumno.'" type="text" name="RunAlumno" class="form-control">
-                        <input value="'.$IdSesionAlumno.'" type="text" name="IdSesionAlumno" class="form-control">
-                        <input value="'.$currenturl.'" type="text" name="UrlRetoma" class="form-control">
-                        <input value="'.$currenturl.'" type="text" name="UrlError" class="form-control">
-                        <input value="'.$CodSence.'" type="text" name="CodSence" class="form-control">
-                        <input value="'.$CodigoCurso.'" type="text" name="CodigoCurso" class="form-control">
+                    <div style='display:none;'>
+                        <input value='{$rut}' type='text' name='RutOtec' class='form-control'>
+                        <input value='{$token}' type='text' name='Token' class='form-control'>
+                        <input value='{$this->lineadecap}' type='text' name='LineaCapacitacion' class='form-control'>
+                        <input value='{$RunAlumno}' type='text' name='RunAlumno' class='form-control'>
+                        <input value='{$IdSesionAlumno}' type='text' name='IdSesionAlumno' class='form-control'>
+                        <input value='{$currenturl}' type='text' name='UrlRetoma' class='form-control'>
+                        <input value='{$currenturl}' type='text' name='UrlError' class='form-control'>
+                        <input value='{$CodSence}' type='text' name='CodSence' class='form-control'>
+                        <input value='{$CodigoCurso}' type='text' name='CodigoCurso' class='form-control'>
                     </div>
-                </form>';
+                </form>";
     }
 
     public function existen_campos_sence(){
@@ -250,5 +252,29 @@ class Engine{
 
         return $options;
 
+    }
+
+    public function block_content(){
+        global $CFG;
+        $registrar = '#';
+        $solicitar = '#';
+        $cambiar = '#';
+        $actualizar = '#';
+        return "
+            <div style='display:flex; margin-top:30px;'>
+                <div style='width:50%;' id='relevant-links'>
+                    <h4>Enlaces de Interes</h4>
+                    <ul>
+                        <li><a href='{$registrar}'>Registrar Clave SENCE</a></li>
+                        <li><a href='{$solicitar}'>Solicitar Nueva Clave SENCE</a></li>
+                        <li><a href='{$cambiar}'>Cambiar Clave SENCE</a></li>
+                        <li><a href='{$actualizar}'>Actualizar Datos</a></li>
+                    </ul>
+                </div>
+                <div style='width:50%; text-align:center;'>
+                    <image style='width:20%;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
+                </div>
+            </div>
+        ";
     }
 }
