@@ -56,7 +56,7 @@ function drawTable(){
     for( i in otecs ){
         content = `
             ${content}
-            <tr style="border:solid 1px gray;">
+            <tr style="border:solid 1px #ced4da;">
                 <td>${otecs[i].name}</td>
                 <td>${otecs[i].rut}</td>
                 <td>${otecs[i].token}</td>

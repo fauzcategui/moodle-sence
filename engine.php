@@ -31,49 +31,168 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2020 onwards Felipe Uzcátegui
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class Engine{
 
-    private $alumnos = [];
-    private $runAlumno;
-    private $CodSence;
-    private $lineadecap;
-    private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
+class Engine
+{
+
+    /**
+     * Links del Sence
+     */
     private $urlInicio = 'https://sistemas.sence.cl/rce/Registro/IniciarSesion';
+    private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
+    private $urlCierre = '#';
+    private $urlCierreTest = '#';
+
     private $urlRegistro = '#';
     private $urlCambiaCus = '#';
     private $urlActualiza = '#';
-    private $blockinstance;
 
-    public $lock_status = 1;
+     /**
+     * Posibles errores a reportar por SENCE según Documentación
+     */
+    private  $erroresSence = [
+        '100' =>  'Contraseña incorrecta.',
+        '200' =>  'Parámetros vacíos.',
+        '201' =>  'Parámetro UrlError sin datos.',
+        '202' =>  'Parámetro UrlError con formato incorrecto.',
+        '203' =>  'Parámetro UrlRetoma con formato incorrecto.',
+        '204' =>  'Parámetro CodSence con formato incorrecto.',
+        '205' =>  'Parámetro CodigoCurso con formato incorrecto.',
+        '206' =>  'Línea de capacitación con formato incorrecto.',
+        '207' =>  'Parámetro RunAlumno incorrecto.',
+        '208' =>  'Parámetro RunAlumno diferente al enviado por OTEC.',
+        '209' =>  'Parámetro RutOtec incorrecto.',
+        '210' =>  'Sesión caducada.',
+        '211' =>  'Token incorrecto.',
+        '212' =>  'Token caducado.',
+        '300' =>  'Error interno.',
+        '301' =>  'Error interno.',
+        '302' =>  'Error interno.',
+        '303' =>  'Error interno.',
+        '304' =>  'Error interno.',
+        '305' =>  'Error interno.',
+    ];
+
+
+    /**
+     * Parametros para el Formulario SENCE
+     */
+    private $token, $rutOtec, $lineaCap, $codCurso, $codAlumno, $runAlumno, $sesionAlumno;
+
+    /**
+     * Instancia del Bloque
+     */
+    private $blockInstance;
+
+    /**
+     * Sera llenado por los alumnos del Formulario
+     */
+    private $alumnos;
+    private $coursecontext;
+
+    /**
+     * Tiempo de Sesión (3 Horas)
+     */
+    private $tiempoSesion = 3600 * 3;
+
 
     function __construct(){
-        global $DB, $COURSE;
+        global $DB, $COURSE, $USER;
+        /**
+         * Genera Instancia del Bloque
+         */
+        $this->coursecontext = context_course::instance($COURSE->id);
+        $block = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $this->coursecontext->id), '*', MUST_EXIST);
+        $this->blockInstance = block_instance('sence', $block);
 
-        $coursecontext = context_course::instance($COURSE->id);
-        $blockrecord = $DB->get_record('block_instances', array('blockname' => 'sence', 'parentcontextid' => $coursecontext->id), '*', MUST_EXIST);
-        $this->blockinstance = block_instance('sence', $blockrecord);
+        $this->runAlumno = $this->run_alumno();
+        $otec = $this->info_otec();
+        $this->rutOtec = $otec['rut'];
+        $this->token = $otec['token'];
+        $this->codCurso = $this->get_instance_config('codigoCurso') ? $this->get_instance_config('codigoCurso') : '';
+        $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
+        $this->sesionAlumno = $USER->sesskey;
+
+        /**
+         * Carga los alumnos del Bloque SENCE
+         */
+        $this->alumnos = $this->get_instance_config('senceAlumnos') ? json_decode( $this->get_instance_config('senceAlumnos'), true ) : [];
     }
 
-    public function procesa_respuesta( $req, $currenturl ){
-        $CodSence = isset($req['CodSence']) ? $req['CodSence'] : 0;
-        $CodigoCurso = isset($req['CodigoCurso']) ? $req['CodigoCurso'] : 0;
-        $IdSesionAlumno = isset($req['IdSesionAlumno']) ? $req['IdSesionAlumno'] : 0;
-        $IdSesionSence = isset($req['IdSesionSence']) ? $req['IdSesionSence'] : 0;
-        $RunAlumno = isset($req['RunAlumno']) ? $req['RunAlumno'] : 0;
-        $FechaHora = isset($req['FechaHora']) ? $req['FechaHora'] : 0;
-        $ZonaHoraria = isset($req['ZonaHoraria']) ? $req['ZonaHoraria'] : 0;
-        $LineaCapacitacion = isset($req['LineaCapacitacion']) ? $req['LineaCapacitacion'] : 0;
-        $GlosaError = isset($req['GlosaError']) ? $req['GlosaError'] : 0;
-        if( $GlosaError > 0 ){
-            $this->lock_status = 1;
-            return $this->describe_error( $GlosaError ) . $this->prepare_form( $currenturl );
+    public function content(){
+        return $this->es_alumno() ? $this->content_alumno() : $this->content_editor();
+    }
+
+    private function content_alumno(){
+        global $PAGE;
+
+        /**
+         * Caso: POST desde SENCE
+         */
+        if( isset( $_POST['RunAlumno'] ) ){
+            if( isset($_POST['GlosaError']) ){
+                $PAGE->requires->js('/blocks/sence/js/locker.js');
+                return $this->formatea_error( $_POST['GlosaError'] ) . $this->asistencia_form();
+            }
+            $this->registra_asistencia();
         }
-        $this->registra_asistencia_moodle();
-        $this->lock_status = 0;
-        return $this->formatea_html_correcto('Asistencia SENCE Registrada!');
+
+        if( !$this->es_alumno_sence() ){
+            if( $this->solo_sence() ){
+                $PAGE->requires->js('/blocks/sence/js/locker.js');
+                return 'No tienes acceso a este curso SENCE';
+            }
+            return 'Usuario sin SENCE Permitido';
+        }
+
+        if( $this->asistencia_vigente() ){
+            return 'Asistencia SENCE Fina';
+        }
+
+        $PAGE->requires->js('/blocks/sence/js/locker.js');
+        return  $this->asistencia_form();
+
+
     }
 
-    public function registra_asistencia_moodle(){
+    private function asistencia_vigente(){
+        global $DB, $USER, $COURSE;
+        if( $this->get_instance_config('senceTiempoCierre') ){
+            $asistencia = $DB->get_records( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
+            if( count( $asistencia ) > 0 ){
+                $asistencia  =  array_values( $asistencia );
+                return ( time() - $asistencia[count($asistencia)-1]->timecreated ) < $this->tiempoSesion;
+            }
+            return false;
+        }
+
+        return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
+    }
+
+    private function content_editor(){
+        return "
+        <p>Link para ayuda con la configuración sence <a href='#'>Ayuda</a></p>
+        ";
+    }
+
+    private function es_alumno_sence(){
+        if( count($this->alumnos) > 0 && $this->runAlumno ){
+            foreach( $this->alumnos as $alumno ){
+                if( $alumno['rut'] == $this->runAlumno ){
+                    $this->codAlumno = $alumno['cod'];
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function es_alumno(){
+        return !has_capability('moodle/course:viewhiddensections', $this->coursecontext);
+    }
+
+    private function registra_asistencia(){
         global $DB, $COURSE, $USER;
 
         $data = [
@@ -82,159 +201,70 @@ class Engine{
             'timecreated' => time(),
         ];
 
-        if( ! $DB->get_record( 'block_sence', [ 'userid' => $USER->id, 'courseid' => $COURSE->id, ] ) ){
-            return $DB->insert_record( 'block_sence' , $data);
+        return $DB->insert_record( 'block_sence' , $data);
+    }
+
+    private function formatea_error($glosa){
+        $show = '';
+        $errores = explode(';', $glosa);
+        foreach($errores as $error){
+            $msj = isset( $this->erroresSence[trim($error)] ) ? $this->erroresSence[trim($error)] : 'Error desconocido';
+            $show = $show . "<div style='padding:10px; background-color:#ee928f; color:fff; border-radius:5px; margin-bottom:10px;'>{$msj}</div>";
         }
-
+        return $show;
     }
 
-    public function style_blocker(){
-        return '<style>#region-main{filter:blur(5px);pointer-events:none;}</style>';
-    }
-
-    public function describe_error($error){
-        $errores_sence = [
-            '100' =>  'Contraseña incorrecta.',
-            '200' =>  'Parámetros vacíos.',
-            '201' =>  'Parámetro UrlError sin datos.',
-            '202' =>  'Parámetro UrlError con formato incorrecto.',
-            '203' =>  'Parámetro UrlRetoma con formato incorrecto.',
-            '204' =>  'Parámetro CodSence con formato incorrecto.',
-            '205' =>  'Parámetro CodigoCurso con formato incorrecto.',
-            '206' =>  'Línea de capacitación con formato incorrecto.',
-            '207' =>  'Parámetro RunAlumno incorrecto.',
-            '208' =>  'Parámetro RunAlumno diferente al enviado por OTEC.',
-            '209' =>  'Parámetro RutOtec incorrecto.',
-            '210' =>  'Sesión caducada.',
-            '211' =>  'Token incorrecto.',
-            '212' =>  'Token caducado.',
-            '300' =>  'Error interno.',
-            '301' =>  'Error interno.',
-            '302' =>  'Error interno.',
-            '303' =>  'Error interno.',
-            '304' =>  'Error interno.',
-            '305' =>  'Error interno.',
-        ];
-
-        if( isset( $errores_sence[$error] )  ){
-            return $this->formatea_html_error( $errores_sence[$error] ) . '<br>' . $this->style_blocker();
-        }
-
-        return $this->formatea_html_error('Error desconocido. <br> Contacte a la Otec');
-
-    }
-
-    public function es_alumno_sence(){
-        $this->alumnos = $this->parsear_codigo_alumnos( $this->blockinstance->config->alumnos );
-        $this->lineadecap = $this->blockinstance->config->lineadecap;
-
-        return array_key_exists( strtolower($this->runAlumno  ), $this->alumnos);
-    }
-
-    public function es_alumno(){
-        global $COURSE;
-        $coursecontext = context_course::instance($COURSE->id);
-        return !has_capability('moodle/course:viewhiddensections', $coursecontext);
-    }
-
-    public function tiene_run(){
-        global $USER;
-
-        if( preg_match('/\d*-[0-9kK]/', $USER->username) ){
-            $this->runAlumno = strtolower($USER->username);
-            return true;
-        }
-
-        if( preg_match('/\d*-[0-9kK]/', $USER->idnumber) ){
-            $this->runAlumno = strtolower($USER->idnumber);
-            return true;
-        }
-
-        return false;
-
-    }
-
-    public function prepare_form( $currenturl ){
-        $RunAlumno = $this->runAlumno;
-        $CodigoCurso = $this->alumnos[ $RunAlumno ];
-        $IdSesionAlumno = '2';
-        $CodSence = $this->CodSence;
-
-        $t = explode(';', $this->blockinstance->config->otec);
-        $rut = $t[0];
-        $token = $t[1];
-
+    private function asistencia_form(){
+        global $PAGE, $CFG;
         return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
                     <button type='submit' class='btn btn-primary' style='width:100%'>
                         Iniciar Sesión
                     </button>
-                    <div style='display:none;'>
-                        <input value='{$rut}' type='text' name='RutOtec' class='form-control'>
-                        <input value='{$token}' type='text' name='Token' class='form-control'>
-                        <input value='{$this->lineadecap}' type='text' name='LineaCapacitacion' class='form-control'>
-                        <input value='{$RunAlumno}' type='text' name='RunAlumno' class='form-control'>
-                        <input value='{$IdSesionAlumno}' type='text' name='IdSesionAlumno' class='form-control'>
-                        <input value='{$currenturl}' type='text' name='UrlRetoma' class='form-control'>
-                        <input value='{$currenturl}' type='text' name='UrlError' class='form-control'>
-                        <input value='{$CodSence}' type='text' name='CodSence' class='form-control'>
-                        <input value='{$CodigoCurso}' type='text' name='CodigoCurso' class='form-control'>
+                    <div style='display:none'>
+                        <input value='{$this->rutOtec}' type='text' name='RutOtec' placeholder='RutOtec' class='form-control'>
+                        <input value='{$this->token}' type='text' name='Token' placeholder='Token' class='form-control'>
+                        <input value='{$this->lineaCap}' type='text' name='LineaCapacitacion' placeholder='LineaCapacitacion' class='form-control'>
+                        <input value='{$this->runAlumno}' type='text' name='RunAlumno' placeholder='RunAlumno' class='form-control'>
+                        <input value='{$this->sesionAlumno}' type='text' name='IdSesionAlumno' placeholder='IdSesionAlumno' class='form-control'>
+                        <input value='{$PAGE->url}' type='text' name='UrlRetoma' placeholder='UrlRetoma' class='form-control'>
+                        <input value='{$PAGE->url}' type='text' name='UrlError' placeholder='UrlError' class='form-control'>
+                        <input value='{$this->codAlumno}' type='text' name='CodSence' placeholder='CodSence' class='form-control'>
+                        <input value='{$this->codCurso}' type='text' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
                     </div>
-                </form>";
+                </form>
+                <div style='display:flex; margin-top:30px;'>
+                <div style='width:50%;' id='relevant-links'>
+                    <h4>Enlaces de Interes</h4>
+                    <ul>
+                        <li><a href='{$this->urlRegistro}'>Registrar Clave SENCE</a></li>
+                        <li><a href='{$this->urlRegistro}'>Solicitar Nueva Clave SENCE</a></li>
+                        <li><a href='{$this->urlRegistro}'>Cambiar Clave SENCE</a></li>
+                        <li><a href='{$this->urlRegistro}'>Actualizar Datos</a></li>
+                    </ul>
+                </div>
+                <div style='width:50%; text-align:center;'>
+                    <image style='width:20%;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
+                </div>
+            </div>";
     }
 
-    public function existen_campos_sence(){
-        if( isset( $this->blockinstance->config ) ){
-            $this->CodSence = $this->blockinstance->config->codigocurso;
-            return strlen( $this->CodSence ) > 5;
+    private function run_alumno(){
+        global $USER;
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->username) ){
+            return strtolower($USER->username);
+        }
+
+        if( preg_match('/\d*-[0-9kK]/', $USER->idnumber) ){
+            return strtolower($USER->idnumber);
         }
 
         return false;
     }
 
-    public function tiene_asistencia(){
-        global $DB, $USER, $COURSE;
-        return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
-    }
-
-    public function parsear_codigo_alumnos($stralumnos){
-
-        preg_match_all('/\d*-[0-9kK]\s\d*/', $stralumnos, $alumnos );
-        if( ! count($alumnos[0]) < 1 ){
-            $result = [];
-            foreach($alumnos[0] as $alumno){
-                $exploded = explode(' ', $alumno);
-                $result[ $exploded[0] ] = $exploded[1];
-            }
-            return $result;
-        }
-        return [];
-
-    }
-
-    public function exige_asistencia(){
-        if( isset( $this->blockinstance->config ) ){
-            return $this->blockinstance->config->bloqueacurso;
-        }
-
-        return false;
-
-    }
-
-    public function formatea_html_error($string){
-        return '<div style="padding:10px; background-color:#ee928f; color:fff; border-radius:5px;">'. $string .'</div>';
-    }
-
-    public function formatea_html_correcto($string){
-        return '<div style="padding:10px; background-color:#ebf2b8; border-radius:5px;">'. $string .'</div>';
-    }
-
-    public function print_logo(){
-        global $CFG;
-        return '<div style="width:100%; text-align:center;">
-                    <image style="width:50%;" src="'.$CFG->wwwroot.'/blocks/sence/assets/sence-logo.webp">
-                </div>';
-    }
-
+    /**
+     * Obtiene JSON de Otecs de la base de datos y las formatea para el <select />
+     */
     static function get_otecs(){
         $otecs = get_config('sence_block', 'otecs');
         $otecs = json_decode( $otecs, true );
@@ -251,30 +281,27 @@ class Engine{
         }
 
         return $options;
-
     }
 
-    public function block_content(){
-        global $CFG;
-        $registrar = '#';
-        $solicitar = '#';
-        $cambiar = '#';
-        $actualizar = '#';
-        return "
-            <div style='display:flex; margin-top:30px;'>
-                <div style='width:50%;' id='relevant-links'>
-                    <h4>Enlaces de Interes</h4>
-                    <ul>
-                        <li><a href='{$registrar}'>Registrar Clave SENCE</a></li>
-                        <li><a href='{$solicitar}'>Solicitar Nueva Clave SENCE</a></li>
-                        <li><a href='{$cambiar}'>Cambiar Clave SENCE</a></li>
-                        <li><a href='{$actualizar}'>Actualizar Datos</a></li>
-                    </ul>
-                </div>
-                <div style='width:50%; text-align:center;'>
-                    <image style='width:20%;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
-                </div>
-            </div>
-        ";
+    private function solo_sence(){
+        return $this->get_instance_config('senceSolo') ? true : false;
+    }
+
+    private function info_otec(){
+        $result = [ 'rut' => '', 'token' => '' ];
+        $otec = $this->get_instance_config('otec') ? $this->get_instance_config('otec') : 'XX;YY';
+        $t = explode(';', $otec);
+        if( count($t) == 2 ){
+            $result['rut'] = $t[0];
+            $result['token'] = $t[1];
+        }
+        return $result;
+    }
+
+    private function get_instance_config($param){
+        if( isset( $this->blockInstance->config ) ){
+            return $this->blockInstance->config->{$param};
+        }
+        return false;
     }
 }

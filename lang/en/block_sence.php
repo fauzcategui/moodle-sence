@@ -10,7 +10,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Asistencia Sence';
+$string['pluginname'] = 'Integración SENCE';
 $string['bienvenido'] = 'Bienvenido(a)';
 $string['codigocurso'] = 'Código SENCE del Curso';
 $string['lineadecap'] = 'Líneas de Capacitación';
