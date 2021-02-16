@@ -36,6 +36,12 @@ class Engine
 {
 
     /**
+     * GitHub README
+     */
+    private $linkReadme = "https://github.com/fauzcategui/moodle-sence/blob/stable/README.md";
+
+
+    /**
      * Links del Sence
      */
     private $urlInicio = 'https://sistemas.sence.cl/rce/Registro/IniciarSesion';
@@ -140,13 +146,13 @@ class Engine
         if( !$this->es_alumno_sence() ){
             if( $this->solo_sence() ){
                 $PAGE->requires->js('/blocks/sence/js/locker.js');
-                return 'No tienes acceso a este curso SENCE';
+                return 'Alumno no permitido';
             }
-            return 'Usuario sin SENCE Permitido';
+            return '';
         }
 
         if( $this->asistencia_vigente() ){
-            return 'Asistencia SENCE Fina';
+            return 'Asistencia Registrada';
         }
 
         $PAGE->requires->js('/blocks/sence/js/locker.js');
@@ -171,7 +177,16 @@ class Engine
 
     private function content_editor(){
         return "
-        <p>Link para ayuda con la configuración sence <a href='#'>Ayuda</a></p>
+        <p>Gestionar las siguientes configuraciones en el bloque:</p>
+        <ul>
+            <li>Asignar OTEC</li>
+            <li>Agregar código SENCE del Curso</li>
+            <li>Agregar Alumnos con su código SENCE</li>
+            <li>Habilitar/Deshabilitar Curso para Alumnos sin SENCE</li>
+            <li>Configurar cierre de Sesión automático cada 3 Horas</li>
+        </ul>
+        <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>
+        <br>
         ";
     }
 
@@ -217,7 +232,7 @@ class Engine
     private function asistencia_form(){
         global $PAGE, $CFG;
         return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
-                    <button type='submit' class='btn btn-primary' style='width:100%'>
+                    <button type='submit' class='btn btn-primary btn-block btn-lg'>
                         Iniciar Sesión
                     </button>
                     <div style='display:none'>
@@ -234,16 +249,13 @@ class Engine
                 </form>
                 <div style='display:flex; margin-top:30px;'>
                 <div style='width:50%;' id='relevant-links'>
-                    <h4>Enlaces de Interes</h4>
+                    <h4>Enlaces de Interés</h4>
                     <ul>
                         <li><a href='{$this->urlRegistro}'>Registrar Clave SENCE</a></li>
                         <li><a href='{$this->urlRegistro}'>Solicitar Nueva Clave SENCE</a></li>
                         <li><a href='{$this->urlRegistro}'>Cambiar Clave SENCE</a></li>
                         <li><a href='{$this->urlRegistro}'>Actualizar Datos</a></li>
                     </ul>
-                </div>
-                <div style='width:50%; text-align:center;'>
-                    <image style='width:20%;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
                 </div>
             </div>";
     }

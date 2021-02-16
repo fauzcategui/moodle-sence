@@ -11,14 +11,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Integración SENCE';
-$string['bienvenido'] = 'Bienvenido(a)';
 $string['codigocurso'] = 'Código SENCE del Curso';
 $string['lineadecap'] = 'Líneas de Capacitación';
 $string['confalumnos'] = 'Lista de Alumnos ';
 $string['permit'] = 'Habilitar curso solo para alumnos con código SENCE';
-$string['instrucciones'] = 'Instrucciones de como agregar a los alumnos para que puedan usar SENCE';
 $string['sence:myaddinstance'] = 'Integrar SENCE';
 $string['sence:addinstance'] = 'Integrar SENCE';
-
-$string['error_campos'] = 'El código SENCE del curso no esta configurado o no es correcto';
-$string['error_run'] = 'RUT no configurado o incorrecto';
