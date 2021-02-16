@@ -49,9 +49,13 @@ class Engine
     private $urlCierre = '#';
     private $urlCierreTest = '#';
 
-    private $urlRegistro = '#';
-    private $urlCambiaCus = '#';
-    private $urlActualiza = '#';
+    /**
+     * Otros Links de Interés del SENCE
+     */
+    private $linkRegistrar = 'https://cus.sence.cl/Account/Registrar';
+    private $linkSolicitar = 'https://cus.sence.cl/Account/RecuperarClave';
+    private $linkCambiar = 'https://cus.sence.cl/Account/CambiarClave';
+    private $linkActualizar = 'https://cus.sence.cl/Account/ActualizarDatos';
 
      /**
      * Posibles errores a reportar por SENCE según Documentación
@@ -231,7 +235,7 @@ class Engine
 
     private function asistencia_form(){
         global $PAGE, $CFG;
-        return "<form style='text-align:center;' method='POST' action='{$this->urlInicioTest}'>
+        return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>
                         Iniciar Sesión
                     </button>
@@ -251,10 +255,10 @@ class Engine
                 <div style='width:50%;' id='relevant-links'>
                     <h4>Enlaces de Interés</h4>
                     <ul>
-                        <li><a href='{$this->urlRegistro}'>Registrar Clave SENCE</a></li>
-                        <li><a href='{$this->urlRegistro}'>Solicitar Nueva Clave SENCE</a></li>
-                        <li><a href='{$this->urlRegistro}'>Cambiar Clave SENCE</a></li>
-                        <li><a href='{$this->urlRegistro}'>Actualizar Datos</a></li>
+                        <li><a target='_blank' href='{$this->linkRegistrar}'>Registrar Clave SENCE</a></li>
+                        <li><a target='_blank' href='{$this->linkSolicitar}'>Solicitar Nueva Clave SENCE</a></li>
+                        <li><a target='_blank' href='{$this->linkCambiar}'>Cambiar Clave SENCE</a></li>
+                        <li><a target='_blank' href='{$this->linkActualizar}'>Actualizar Datos</a></li>
                     </ul>
                 </div>
             </div>";
