@@ -9,7 +9,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require('engine_dev.php');
+require('engine.php');
 
 class block_sence extends block_base {
 
