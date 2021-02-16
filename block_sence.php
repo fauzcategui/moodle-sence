@@ -39,7 +39,7 @@ class block_sence extends block_base {
         $this->content =  new stdClass;
         $this->content->text = $sence->content();
         $this->content->footer = "
-        <div style='width:100%; text-align:center;'>
+        <div style='width:100%; text-align:center; margin-top:10px;'>
             <div style='height:2px; width:100%; background:#ffb1b1;'></div>
             <image style='width:150px;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
         </div>";

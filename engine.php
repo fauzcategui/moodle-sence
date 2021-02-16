@@ -138,6 +138,7 @@ class Engine
         if( isset( $_POST['RunAlumno'] ) ){
             if( isset($_POST['GlosaError']) ){
                 $PAGE->requires->js('/blocks/sence/js/locker.js');
+                $this->es_alumno_sence();
                 return $this->formatea_error( $_POST['GlosaError'] ) . $this->asistencia_form();
             }
             $this->registra_asistencia();
@@ -186,7 +187,6 @@ class Engine
             <li>Configurar cierre de Sesión automático cada 3 Horas</li>
         </ul>
         <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>
-        <br>
         ";
     }
 
@@ -231,7 +231,7 @@ class Engine
 
     private function asistencia_form(){
         global $PAGE, $CFG;
-        return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
+        return "<form style='text-align:center;' method='POST' action='{$this->urlInicioTest}'>
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>
                         Iniciar Sesión
                     </button>
