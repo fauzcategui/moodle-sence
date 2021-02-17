@@ -14,9 +14,6 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="asistencia" UNIQUE="true" FIELDS="courseid, userid"/>
-      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>
