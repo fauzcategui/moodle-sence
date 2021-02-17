@@ -21,7 +21,7 @@ class block_sence_edit_form extends block_edit_form {
          */
         $lineascap = [
             3 => 'Impulsa Personas (3)',
-            1 => 'Programas Sociales o Becas Labores (1)',
+            // 1 => 'Programas Sociales o Becas Labores (1)',
         ];
         $mform->addElement('select', 'config_lineaCap', get_string('lineadecap', 'block_sence'), $lineascap);
         $mform->setDefault('config_lineaCap', 3);
