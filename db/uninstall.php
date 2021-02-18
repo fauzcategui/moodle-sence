@@ -29,5 +29,8 @@ defined('MOODLE_INTERNAL') || die();
  * Custom uninstallation procedure.
  */
 function xmldb_block_sence_uninstall() {
+    global $DB;
+
+    $DB->delete_records( 'config_plugins', ['plugin' => 'block_sence'] );
     return true;
 }
