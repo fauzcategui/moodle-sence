@@ -247,8 +247,8 @@ class Engine
                         <input value='{$this->sesionAlumno}' type='text' name='IdSesionAlumno' placeholder='IdSesionAlumno' class='form-control'>
                         <input value='{$PAGE->url}' type='text' name='UrlRetoma' placeholder='UrlRetoma' class='form-control'>
                         <input value='{$PAGE->url}' type='text' name='UrlError' placeholder='UrlError' class='form-control'>
-                        <input value='{$this->codAlumno}' type='text' name='CodSence' placeholder='CodSence' class='form-control'>
-                        <input value='{$this->codCurso}' type='text' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
+                        <input value='{$this->codCurso}' type='text' name='CodSence' placeholder='CodSence' class='form-control'>
+                        <input value='{$this->codAlumno}' type='text' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
                     </div>
                 </form>
                 <div style='display:flex; margin-top:30px;'>
@@ -308,8 +308,8 @@ class Engine
         $otec = $this->get_instance_config('otec') ? $this->get_instance_config('otec') : 'XX;YY';
         $t = explode(';', $otec);
         if( count($t) == 2 ){
-            $result['rut'] = $t[0];
-            $result['token'] = $t[1];
+            $result['rut'] = trim( $t[0] );
+            $result['token'] = trim( $t[1] );
         }
         return $result;
     }

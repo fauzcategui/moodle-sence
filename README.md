@@ -15,7 +15,7 @@ Eventualmente se Agregará el cronómetro y el botón de cierre de sesión.
 ###
 
 ## Descarga
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v2.0.1.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v2.0.2.zip)
 
 
 ## Configuración General
