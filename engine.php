@@ -180,18 +180,25 @@ class Engine
         return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
     }
 
+    private function config_esta_completa(){
+        if( !$this->rutOtec ){ return false; }
+        if( !$this->token ){ return false; }
+        if( !$this->codCurso ){ return false; }
+        return true;
+    }
+
     private function content_editor(){
-        return "
-        <p>Gestionar las siguientes configuraciones en el bloque:</p>
-        <ul>
-            <li>Asignar OTEC</li>
-            <li>Agregar código SENCE del Curso</li>
-            <li>Agregar Alumnos con su código SENCE</li>
-            <li>Habilitar/Deshabilitar Curso para Alumnos sin SENCE</li>
-            <li>Configurar cierre de Sesión automático cada 3 Horas</li>
-        </ul>
-        <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>
-        ";
+        return $this->config_esta_completa() ?
+        "Integración SENCE Activada" : "<p>¡DEBE COMPLETAR LA CONFIGURACIÓN!</p>
+            <p>Revise las siguientes configuraciones en el bloque:</p>
+            <ul>
+                <li>Asignar OTEC</li>
+                <li>Agregar código SENCE del Curso</li>
+                <li>Agregar Alumnos con su código SENCE</li>
+                <li>Habilitar/Deshabilitar Curso para Alumnos sin SENCE</li>
+                <li>Configurar cierre de Sesión automático cada 3 Horas</li>
+            </ul>
+            <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>";
     }
 
     private function es_alumno_sence(){
