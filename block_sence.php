@@ -32,17 +32,11 @@ class block_sence extends block_base {
     }
     
     public function get_content() {
-        global $CFG;
-        
         $sence = new Engine();
 
         $this->content =  new stdClass;
         $this->content->text = $sence->content();
-        $this->content->footer = "
-        <div style='width:100%; text-align:center; margin-top:10px;'>
-            <div style='height:2px; width:100%; background:#ffb1b1;'></div>
-            <image style='width:150px;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
-        </div>";
+        $this->content->footer = $sence->get_footer();
 
         return $this->content;
     }

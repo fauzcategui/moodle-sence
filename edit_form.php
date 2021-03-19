@@ -48,6 +48,13 @@ class block_sence_edit_form extends block_edit_form {
         $mform->setDefault('config_senceTiempoCierre', false);
 
         /**
+         *  True: Pedirá asistencia nueva cuando la anterior tenga más de 3 Horas
+         *  False: Solicitará una asistencia en toda la vida del curso
+         */
+        $mform->addElement('advcheckbox', 'config_muestraLogo', 'Mostrar logo SENCE en en Bloque' );
+        $mform->setDefault('config_muestraLogo', false);
+
+        /**
          * Campo Oculta manejado por "js/edit_form.js" para almacenar los alumnos con sus respectivos códigos SENCE a través de un JSON
          */
         $mform->addElement('textarea', 'config_senceAlumnos', get_string('confalumnos', 'block_sence'), 'wrap="virtual" rows="8" cols="50"');

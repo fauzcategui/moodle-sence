@@ -239,29 +239,24 @@ class Engine
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>
                         Iniciar Sesión
                     </button>
-                    <div style='display:none'>
-                        <input value='{$this->rutOtec}' type='text' name='RutOtec' placeholder='RutOtec' class='form-control'>
-                        <input value='{$this->token}' type='text' name='Token' placeholder='Token' class='form-control'>
-                        <input value='{$this->lineaCap}' type='text' name='LineaCapacitacion' placeholder='LineaCapacitacion' class='form-control'>
-                        <input value='{$this->runAlumno}' type='text' name='RunAlumno' placeholder='RunAlumno' class='form-control'>
-                        <input value='{$this->sesionAlumno}' type='text' name='IdSesionAlumno' placeholder='IdSesionAlumno' class='form-control'>
-                        <input value='{$PAGE->url}' type='text' name='UrlRetoma' placeholder='UrlRetoma' class='form-control'>
-                        <input value='{$PAGE->url}' type='text' name='UrlError' placeholder='UrlError' class='form-control'>
-                        <input value='{$this->codCurso}' type='text' name='CodSence' placeholder='CodSence' class='form-control'>
-                        <input value='{$this->codAlumno}' type='text' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
-                    </div>
+                    <input value='{$this->rutOtec}' type='hidden' name='RutOtec' placeholder='RutOtec' class='form-control'>
+                    <input value='{$this->token}' type='hidden' name='Token' placeholder='Token' class='form-control'>
+                    <input value='{$this->lineaCap}' type='hidden' name='LineaCapacitacion' placeholder='LineaCapacitacion' class='form-control'>
+                    <input value='{$this->runAlumno}' type='hidden' name='RunAlumno' placeholder='RunAlumno' class='form-control'>
+                    <input value='{$this->sesionAlumno}' type='hidden' name='IdSesionAlumno' placeholder='IdSesionAlumno' class='form-control'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlRetoma' placeholder='UrlRetoma' class='form-control'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlError' placeholder='UrlError' class='form-control'>
+                    <input value='{$this->codCurso}' type='hidden' name='CodSence' placeholder='CodSence' class='form-control'>
+                    <input value='{$this->codAlumno}' type='hidden' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
                 </form>
-                <div style='display:flex; margin-top:30px;'>
-                <div style='width:50%;' id='relevant-links'>
-                    <h4>Enlaces de Interés</h4>
-                    <ul>
-                        <li><a target='_blank' href='{$this->linkRegistrar}'>Registrar Clave SENCE</a></li>
-                        <li><a target='_blank' href='{$this->linkSolicitar}'>Solicitar Nueva Clave SENCE</a></li>
-                        <li><a target='_blank' href='{$this->linkCambiar}'>Cambiar Clave SENCE</a></li>
-                        <li><a target='_blank' href='{$this->linkActualizar}'>Actualizar Datos</a></li>
-                    </ul>
-                </div>
-            </div>";
+                <br>
+                <h5>Enlaces de Interés</h5>
+                <ul>
+                    <li><a target='_blank' href='{$this->linkRegistrar}'>Registrar Clave SENCE</a></li>
+                    <li><a target='_blank' href='{$this->linkSolicitar}'>Solicitar Nueva Clave SENCE</a></li>
+                    <li><a target='_blank' href='{$this->linkCambiar}'>Cambiar Clave SENCE</a></li>
+                    <li><a target='_blank' href='{$this->linkActualizar}'>Actualizar Datos</a></li>
+                </ul>";
     }
 
     private function run_alumno(){
@@ -319,5 +314,14 @@ class Engine
             return $this->blockInstance->config->{$param};
         }
         return false;
+    }
+
+    public function get_footer(){
+        global $CFG;
+        return  !$this->get_instance_config('muestraLogo') ? "" : "
+        <div style='width:100%; text-align:center; margin-top:10px;'>
+            <div style='height:2px; width:100%; background:#ffb1b1;'></div>
+            <image style='width:150px;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
+        </div>";
     }
 }
