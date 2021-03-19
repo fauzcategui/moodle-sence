@@ -29,6 +29,13 @@ defined('MOODLE_INTERNAL') || die();
  * Custom code to be run on installing the plugin.
  */
 function xmldb_block_sence_install() {
+    global $DB;
+    $DB->delete_records( 'config_plugins', ['plugin' => 'sence_block'] );
+    return $DB->insert_record('config_plugins',[
+        'plugin' => 'sence_block',
+        'name' => 'otecs',
+        'value' => json_encode([])
+    ]);
 
     return true;
 }
