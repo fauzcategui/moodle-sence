@@ -6,16 +6,15 @@ Actualmente este plugin no implemente el cierre de sesión manual por parte del 
 
 Eventualmente se Agregará el cronómetro y el botón de cierre de sesión.
 
-## Actualización 2.0 del Plugin
+## Actualización 2.1 del Plugin
 ### Cambios
-* Implementación Multi OTEC que permite configurar una OTEC diferente en cada Curso.
-* La caja de Texto donde se agregan los Alumnos (RUN) con su código SENCE fue cambiado por un formulario más amigable.
-* Cierre de Sesión automático cada 3 Horas.
+* Muestra estado de Configuración del Bloque al usuario con privilegios para configurar.
+* Ajuste de Pantalla de Bloqueo del curso (Antes deformaba los demás bloques).
 * Mejoras visuales y de usabilidad al momento de configurar el Bloque.
 ###
 
 ## Descarga
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v2.0.2.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v2.1.zip)
 
 
 ## Configuración General
