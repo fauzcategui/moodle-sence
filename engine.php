@@ -129,6 +129,22 @@ class Engine
         $this->alumnos = $this->get_instance_config('senceAlumnos') ? json_decode( $this->get_instance_config('senceAlumnos'), true ) : [];
     }
 
+    public function encontar_grupo(){
+        global $COURSE, $USER;
+        $groups = groups_get_all_groups($COURSE->id);
+        foreach( $groups as $group ){
+            if( strtolower($group->name) == 'becarios' || preg_match( '/(?<!x)sence-/', strtolower($group->name) ) ){
+                $users = groups_get_members( $group->id,'u.id');
+                foreach( $users as $user ){
+                    if( $USER->id == $user->id ){
+                        return strtolower($group->name);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public function content(){
         return $this->es_alumno() ? $this->content_alumno() : $this->content_editor();
     }
@@ -149,7 +165,7 @@ class Engine
         }
 
         if( !$this->es_alumno_sence() ){
-            if( $this->solo_sence() ){
+            if( $this->codAlumno != 'becarios' ){
                 $PAGE->requires->js('/blocks/sence/js/locker.js');
                 return 'Alumno no permitido';
             }
@@ -162,7 +178,6 @@ class Engine
 
         $PAGE->requires->js('/blocks/sence/js/locker.js');
         return  $this->asistencia_form();
-
 
     }
 
@@ -202,13 +217,18 @@ class Engine
     }
 
     private function es_alumno_sence(){
-        if( count($this->alumnos) > 0 && $this->runAlumno ){
-            foreach( $this->alumnos as $alumno ){
-                if( $alumno['rut'] == $this->runAlumno ){
-                    $this->codAlumno = $alumno['cod'];
-                    return true;
-                }
-            }
+        $r = $this->encontar_grupo();
+        if( is_null($r) ){
+            return false;
+        }
+        if( $r == 'becarios' ){
+            $this->codAlumno = 'becarios';
+            return false;
+        }
+        $t = explode('-', $r);
+        if( count($t) == 2 ){
+            $this->codAlumno = $t[1];
+            return true;
         }
 
         return false;
