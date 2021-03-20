@@ -261,6 +261,9 @@ class Engine
     }
 
     private function asistencia_form(){
+        if( !$this->runAlumno ){
+            return 'Se debe configurar el RUN del alumno para continuar';
+        }
         global $PAGE, $CFG;
         return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>
@@ -319,10 +322,6 @@ class Engine
         }
 
         return $options;
-    }
-
-    private function solo_sence(){
-        return $this->get_instance_config('senceSolo') ? true : false;
     }
 
     private function info_otec(){
