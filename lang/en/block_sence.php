@@ -13,7 +13,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Integración SENCE';
 $string['codigocurso'] = 'Código SENCE del Curso';
 $string['lineadecap'] = 'Líneas de Capacitación';
-$string['confalumnos'] = 'Lista de Alumnos ';
+$string['grupobecarios'] = 'Nombre Grupo Becarios';
 $string['permit'] = 'Habilitar curso solo para alumnos con código SENCE';
 $string['sence:myaddinstance'] = 'Integrar SENCE';
 $string['sence:addinstance'] = 'Integrar SENCE';

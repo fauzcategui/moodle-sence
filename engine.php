@@ -105,6 +105,13 @@ class Engine
      */
     private $tiempoSesion = 3600 * 3;
 
+    /**
+     * Nombre del Grupo de Becarios
+     */
+    private $nombreBecarios;
+
+    private $mensajeError = '';
+
 
     function __construct(){
         global $DB, $COURSE, $USER;
@@ -122,6 +129,7 @@ class Engine
         $this->codCurso = $this->get_instance_config('codigoCurso') ? $this->get_instance_config('codigoCurso') : '';
         $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
         $this->sesionAlumno = $USER->sesskey;
+        $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
 
         /**
          * Carga los alumnos del Bloque SENCE
@@ -133,7 +141,7 @@ class Engine
         global $COURSE, $USER;
         $groups = groups_get_all_groups($COURSE->id);
         foreach( $groups as $group ){
-            if( strtolower($group->name) == 'becarios' || preg_match( '/(?<!x)sence-/', strtolower($group->name) ) ){
+            if( strtolower($group->name) == $this->nombreBecarios || preg_match( '/(?<!x)sence-/', strtolower($group->name) ) ){
                 $users = groups_get_members( $group->id,'u.id');
                 foreach( $users as $user ){
                     if( $USER->id == $user->id ){
@@ -165,9 +173,9 @@ class Engine
         }
 
         if( !$this->es_alumno_sence() ){
-            if( $this->codAlumno != 'becarios' ){
+            if( $this->codAlumno != $this->nombreBecarios ){
                 $PAGE->requires->js('/blocks/sence/js/locker.js');
-                return 'Alumno no permitido';
+                return 'Alumno no autorizado para este curso';
             }
             return '';
         }
@@ -196,24 +204,43 @@ class Engine
     }
 
     private function config_esta_completa(){
-        if( !$this->rutOtec ){ return false; }
-        if( !$this->token ){ return false; }
-        if( !$this->codCurso ){ return false; }
-        return true;
+        $error = false;
+        $this->mensajeError = '';
+
+        if( !$this->rutOtec || !$this->token ){
+            $this->mensajeError = $this->mensajeError.'<li>Seleccionar una OTEC</li>';
+            $error = true;
+        }
+        if( strlen( strval($this->codCurso) ) < 10 ){
+            $this->mensajeError = $this->mensajeError.'<li>Configurar un Código de Curso de 10 dígitos</li>';
+            $error = true;
+        }
+        return !$error;
     }
 
     private function content_editor(){
-        return $this->config_esta_completa() ?
-        "Integración SENCE Activada" : "<p>¡DEBE COMPLETAR LA CONFIGURACIÓN!</p>
-            <p>Revise las siguientes configuraciones en el bloque:</p>
-            <ul>
-                <li>Asignar OTEC</li>
-                <li>Agregar código SENCE del Curso</li>
-                <li>Agregar Alumnos con su código SENCE</li>
-                <li>Habilitar/Deshabilitar Curso para Alumnos sin SENCE</li>
-                <li>Configurar cierre de Sesión automático cada 3 Horas</li>
-            </ul>
-            <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>";
+        $result = '';
+        if( $this->config_esta_completa() ){
+            $result = "<p>Integración SENCE Activada
+                        <br><span>OTEC: <b>{$this->rutOtec}</b></span>
+                        <br><span>Código Curso: <b>{$this->codCurso}</b></span>
+                        </p>";
+        }
+        else{
+            $result = "<div class='alert alert-danger'><p>¡CONFIGURACIÓN INCOMPLETA!</p>
+                        <p>Se debe:</p>
+                        <ul>{$this->mensajeError}</ul></div>";
+        }
+
+        $cierreSesison = $this->get_instance_config('senceTiempoCierre') ? 'La sesión del participante se cerrará cada 3 Horas' : 'Se pedirá Iniciar sesión una sola vez al participante';
+        $grupo = $this->get_instance_config('grupoBecas');
+        $instrucciones = "<ul>
+                            <li>Recuerda asignar el ID de acción en el nombre del grupo de tus participantes, así: SENCE-XXXXXXX</li>
+                            <li>Los usuarios en el Grupo: {$grupo}, no serán requeridos de integrar SENCE</li>
+                            <li>{$cierreSesison}</li>
+                        </ul>";
+
+        return $result . $instrucciones;
     }
 
     private function es_alumno_sence(){
@@ -221,8 +248,8 @@ class Engine
         if( is_null($r) ){
             return false;
         }
-        if( $r == 'becarios' ){
-            $this->codAlumno = 'becarios';
+        if( $r == $this->nombreBecarios ){
+            $this->codAlumno = $this->nombreBecarios;
             return false;
         }
         $t = explode('-', $r);
@@ -255,20 +282,29 @@ class Engine
         $errores = explode(';', $glosa);
         foreach($errores as $error){
             $msj = isset( $this->erroresSence[trim($error)] ) ? $this->erroresSence[trim($error)] : 'Error desconocido';
-            $show = $show . "<div style='padding:10px; background-color:#ee928f; color:fff; border-radius:5px; margin-bottom:10px;'>{$msj}</div>";
+            $show = $show . "<div class='alert alert-danger'>{$msj}</div>";
         }
         return $show;
     }
 
     private function asistencia_form(){
+        global $PAGE;
         if( !$this->runAlumno ){
-            return 'Se debe configurar el RUN del alumno para continuar';
+            return '<div class="alert alert-danger">Se debe configurar el RUN del alumno para continuar</div>';
         }
-        global $PAGE, $CFG;
-        return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
-                    <button type='submit' class='btn btn-primary btn-block btn-lg'>
-                        Iniciar Sesión
-                    </button>
+
+        $linksDeInteres = "<br>
+        <h5>Enlaces de Interés</h5>
+        <ul>
+            <li><a target='_blank' href='{$this->linkRegistrar}'>Registrar Clave SENCE</a></li>
+            <li><a target='_blank' href='{$this->linkSolicitar}'>Solicitar Nueva Clave SENCE</a></li>
+            <li><a target='_blank' href='{$this->linkCambiar}'>Cambiar Clave SENCE</a></li>
+            <li><a target='_blank' href='{$this->linkActualizar}'>Actualizar Datos</a></li>
+        </ul>";
+
+        if( $this->config_esta_completa() ){
+            return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
+                    <button type='submit' class='btn btn-primary btn-block btn-lg'>Iniciar Sesión</button>
                     <input value='{$this->rutOtec}' type='hidden' name='RutOtec' placeholder='RutOtec' class='form-control'>
                     <input value='{$this->token}' type='hidden' name='Token' placeholder='Token' class='form-control'>
                     <input value='{$this->lineaCap}' type='hidden' name='LineaCapacitacion' placeholder='LineaCapacitacion' class='form-control'>
@@ -278,15 +314,10 @@ class Engine
                     <input value='{$PAGE->url}' type='hidden' name='UrlError' placeholder='UrlError' class='form-control'>
                     <input value='{$this->codCurso}' type='hidden' name='CodSence' placeholder='CodSence' class='form-control'>
                     <input value='{$this->codAlumno}' type='hidden' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
-                </form>
-                <br>
-                <h5>Enlaces de Interés</h5>
-                <ul>
-                    <li><a target='_blank' href='{$this->linkRegistrar}'>Registrar Clave SENCE</a></li>
-                    <li><a target='_blank' href='{$this->linkSolicitar}'>Solicitar Nueva Clave SENCE</a></li>
-                    <li><a target='_blank' href='{$this->linkCambiar}'>Cambiar Clave SENCE</a></li>
-                    <li><a target='_blank' href='{$this->linkActualizar}'>Actualizar Datos</a></li>
-                </ul>";
+                    </form>
+                    {$linksDeInteres}";
+        }
+        return "<div class='alert alert-danger'>Integración SENCE Incompleta. Contacte al Administrador</div>{$linksDeInteres}";
     }
 
     private function run_alumno(){
@@ -304,7 +335,7 @@ class Engine
     }
 
     /**
-     * Obtiene JSON de Otecs de la base de datos y las formatea para el <select />
+     * Obtiene JSON de Otecs de la base de datos y las formatea para el <select/>
      */
     static function get_otecs(){
         $otecs = get_config('sence_block', 'otecs');
@@ -348,6 +379,7 @@ class Engine
         <div style='width:100%; text-align:center; margin-top:10px;'>
             <div style='height:2px; width:100%; background:#ffb1b1;'></div>
             <image style='width:150px;' src='{$CFG->wwwroot}/blocks/sence/assets/sence-logo.webp'>
-        </div>";
+        </div>
+        <span>Información más detallada de este bloque <a href='{$this->linkReadme}'>Aquí</a></span>";
     }
 }

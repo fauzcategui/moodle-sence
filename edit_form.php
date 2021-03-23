@@ -15,7 +15,7 @@ class block_sence_edit_form extends block_edit_form {
          */
         $lineascap = [
             3 => 'Impulsa Personas (3)',
-            // 1 => 'Programas Sociales o Becas Labores (1)',
+            1 => 'Programas Sociales o Becas Labores (1)',
         ];
         $mform->addElement('select', 'config_lineaCap', get_string('lineadecap', 'block_sence'), $lineascap);
         $mform->setDefault('config_lineaCap', 3);
@@ -27,6 +27,13 @@ class block_sence_edit_form extends block_edit_form {
         $mform->addElement('text', 'config_codigoCurso', get_string('codigocurso', 'block_sence'), ['size' => '10', 'maxlength' => '10']);
         $mform->setType('config_codigoCurso', PARAM_TEXT);
         $mform->setDefault('config_codigoCurso','');
+
+        /**
+         * Grupo de Becarios del Curso
+         */
+        $mform->addElement('text', 'config_grupoBecas', get_string('grupobecarios', 'block_sence'), ['size' => '10', 'maxlength' => '10']);
+        $mform->setType('config_grupoBecas', PARAM_TEXT);
+        $mform->setDefault('config_grupoBecas','Becarios');
 
         /**
          *  True: Pedirá asistencia nueva cuando la anterior tenga más de 3 Horas
