@@ -41,6 +41,11 @@ class block_sence extends block_base {
         return $this->content;
     }
 
+    public function instance_delete(){
+        global $DB, $COURSE;
+        $DB->delete_records('block_sence', ['courseid' => $COURSE->id ] );
+    }
+
     public function applicable_formats() {
         return array(
                 'course-view' => true,

@@ -23,6 +23,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021031901;
+$plugin->version   = 2021032400;
 $plugin->requires  = 2019111200;
 $plugin->component = 'block_sence';
