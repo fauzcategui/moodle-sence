@@ -18,7 +18,7 @@
  * Code to be executed after the plugin's database scheme has been installed is defined here.
  *
  * @package     block_sence
- * @category    upgrade
+ * @category    install
  * @copyright   2020 Felipe Uzcátegui <felipe.uzcategui@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,12 +29,12 @@ defined('MOODLE_INTERNAL') || die();
  * Custom code to be run on installing the plugin.
  */
 function xmldb_block_sence_install() {
-    global $DB;
+    global $CFG, $DB;
     $DB->delete_records( 'config_plugins', ['plugin' => 'sence_block'] );
     return $DB->insert_record('config_plugins',[
-        'plugin' => 'sence_block',
+        'plugin' => 'block_sence',
         'name' => 'otecs',
-        'value' => json_encode([])
+        'value' => json_encode( ['multiotec' => false,'otecs' => [] ])
     ]);
 
     return true;

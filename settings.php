@@ -9,6 +9,6 @@ if ($ADMIN->fulltree) {
     /**
      * Campor de Texto ocultado por JavaScript para enviar el JSON de Otecs a la Base de Datos
      */
-    $settings->add(new admin_setting_configtextarea('sence_block/otecs', '', '', '', PARAM_RAW));
+    $settings->add(new admin_setting_configtextarea('block_sence/otecs', '', '', '', PARAM_RAW));
 
 }

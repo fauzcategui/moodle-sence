@@ -4,16 +4,13 @@ Plugin desarrollado para que Organismos Técnicos de Capacitación implementen l
 ## Importante
 Actualmente este plugin no implemente el cierre de sesión manual por parte del alumno, es decir que tampoco muestra un contador de minutos al iniciar la sesión, sin embargo puede configurarse para solicitar una sola asistencia en toda la duración del curso para cumplir con el requisito de la resolución [2436](https://sence.gob.cl/sites/default/files/rex_n_2436_deja_sin_efecto_exigencia_de_conectividad.pdf) ó cerrar la sesión del alumno de forma automática cada 3 horas.
 
-## Actualización 3.0 del Plugin
+## Actualización 3.1 del Plugin
 ### Cambios
-* Muestra estado de Configuración del Bloque al usuario con privilegios para configurar.
-* Ajuste de Pantalla de Bloqueo del curso (Antes deformaba los demás bloques).
-* Mejoras visuales y de usabilidad al momento de configurar el Bloque.
-* Configuración de Alumnos se realiza por Grupos y se elimina el formulario de alumnos en el bloque
+* Funcionalidad Multiotec/Monototec
 ###
 
 ## Descarga
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v3.0.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v3.1.zip)
 
 
 ## Configuración General
@@ -24,14 +21,20 @@ En la Configuración General del Bloque se agregan:
 
 ## Instrucciones
 
-##### 1 - Run del alumno:
+##### 1 - Configuración Global del Plugin:
+> En la configuración global ubicada en  "Site administration / Plugins / Blocks / Integración SENCE"
+>
+>- Activar/Desactivar Multiotec ( Default: Desactivado )
+>- Agregar (Nombre | Rut | Token) de las OTECs. En el caso de estár desactivado el Multiotec, solo permitirá agregar una OTEC y esta será usada para todas las instancias existentes del Bloque, también eliminará la opción de "Seleccionar OTEC" en la configuración individual de los bloques de integración SENCE
+
+##### 2 - Run del alumno:
 > Primero debemos configurar el RUN del alumno como nombre de usuario en el formato sin puntos y  el guion separador del dígito verificador ejem. 1111111-1.
 >
 > Si el alumno tiene como nombre de usuario un RUN válido, el plugin usará este para el proceso de asistencia. En el caso de no ser así, entonces revisará el campo "ID NUMBER" del usuario para buscar un RUN válido.
 >
 > Por lo tanto existen dos opciones de implementación en cuanto al usuario Alumno.
 
-##### 2 -Configuración del Bloque:
+##### 3 -Configuración del Bloque:
 > En el bloque de cada curso contará con las siguientes opcione:
 >
 >- "Selecciona OTEC" >  Mostrará las OTECs Agregadas en la configuración general del Bloque.
@@ -49,7 +52,7 @@ En la Configuración General del Bloque se agregan:
 >- "Cerrar sesión del Alumno después de 3 Horas" > Por defecto el bloque exigirá una sola sesión durante toda la duración del Curso. Al activar esta opción la asistencia de SENCE será requerida si el alumno intenta acceder al curso en un período mayor a 3 horas desde el último registro de asistencia.
 >
 >
-##### 3 -Asignación de alumnos:
+##### 4 -Asignación de alumnos:
 >- Los alumnos se deben asignar a un grupo "SENCE-XXXXXX", donde XXXXXX es el ID de acción del alumno.
 
 ## Contribuciones
