@@ -5,9 +5,11 @@ class block_sence_edit_form extends block_edit_form {
         /**
          * Otecs Previamente Guardadas
          */
-        $otecs = Engine::get_otecs();
-        $mform->addElement('select', 'config_otec', 'Selecciona OTEC', $otecs);
-        $mform->setDefault('config_otec', 'XX;YY');
+        if( Engine::is_multiotec() ){
+            $otecs = Engine::get_otecs();
+            $mform->addElement('select', 'config_otec', 'Selecciona OTEC', $otecs);
+            $mform->setDefault('config_otec', 'XX;YY');
+        }
 
 
         /**

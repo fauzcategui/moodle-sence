@@ -208,7 +208,12 @@ class Engine
         $this->mensajeError = '';
 
         if( !$this->rutOtec || !$this->token ){
-            $this->mensajeError = $this->mensajeError.'<li>Seleccionar una OTEC</li>';
+            if( self::is_multiotec() ){
+                $this->mensajeError = $this->mensajeError.'<li>Seleccionar una OTEC para este Bloque</li>';
+            }
+            else{
+                $this->mensajeError = $this->mensajeError.'<li>Configurar OTEC del Sitio</li>';
+            }
             $error = true;
         }
         if( strlen( strval($this->codCurso) ) < 10 ){
@@ -334,19 +339,23 @@ class Engine
         return false;
     }
 
+    static function is_multiotec(){
+        $settings = json_decode( get_config('block_sence', 'otecs'), true );
+        return $settings['multiotec'];
+    }
+
     /**
      * Obtiene JSON de Otecs de la base de datos y las formatea para el <select/>
      */
     static function get_otecs(){
-        $otecs = get_config('sence_block', 'otecs');
-        $otecs = json_decode( $otecs, true );
+        $settings = json_decode( get_config('block_sence', 'otecs'), true );
 
         $options = [
             'none' => 'Seleccione una OTEC'
         ];
 
-        if( count($otecs) > 0){
-            foreach( $otecs as $otec ){
+        if( count($settings['otecs']) > 0){
+            foreach( $settings['otecs'] as $otec ){
                 $value = "{$otec['rut']};{$otec['token']}";
                 $options[ $value ] = "{$otec['name']} | {$otec['rut']}";
             }
@@ -355,15 +364,29 @@ class Engine
         return $options;
     }
 
-    private function info_otec(){
-        $result = [ 'rut' => '', 'token' => '' ];
-        $otec = $this->get_instance_config('otec') ? $this->get_instance_config('otec') : 'XX;YY';
-        $t = explode(';', $otec);
-        if( count($t) == 2 ){
-            $result['rut'] = trim( $t[0] );
-            $result['token'] = trim( $t[1] );
+    private function get_otec(){
+        $settings = json_decode( get_config('block_sence', 'otecs'), true );
+
+        if( $settings['otecs'] > 0 ){
+            return $settings['otecs'][0];
         }
-        return $result;
+
+        return null;
+    }
+
+    private function info_otec(){
+        if( self::is_multiotec() ){
+            $result = [ 'rut' => '', 'token' => '' ];
+            $otec = $this->get_instance_config('otec') ? $this->get_instance_config('otec') : 'XX;YY';
+            $t = explode(';', $otec);
+            if( count($t) == 2 ){
+                $result['rut'] = trim( $t[0] );
+                $result['token'] = trim( $t[1] );
+            }
+            return $result;
+        }
+
+        return $this->get_otec();
     }
 
     private function get_instance_config($param){
