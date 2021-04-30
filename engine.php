@@ -130,11 +130,6 @@ class Engine
         $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
-
-        /**
-         * Carga los alumnos del Bloque SENCE
-         */
-        $this->alumnos = $this->get_instance_config('senceAlumnos') ? json_decode( $this->get_instance_config('senceAlumnos'), true ) : [];
     }
 
     public function encontar_grupo(){
@@ -154,6 +149,12 @@ class Engine
     }
 
     public function content(){
+
+        if ( $this->es_profesor_no_editor() ) {
+            // Devuelve el contenido vacío por lo tanto no muestra el bloque
+            return '';
+        }
+
         return $this->es_alumno() ? $this->content_alumno() : $this->content_editor();
     }
 
@@ -260,6 +261,16 @@ class Engine
         $t = explode('-', $r);
         if( count($t) == 2 ){
             $this->codAlumno = $t[1];
+            return true;
+        }
+
+        return false;
+    }
+
+    private function es_profesor_no_editor(){
+        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
+            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+        ){
             return true;
         }
 

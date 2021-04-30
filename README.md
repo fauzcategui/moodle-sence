@@ -4,13 +4,13 @@ Plugin desarrollado para que Organismos Técnicos de Capacitación implementen l
 ## Importante
 Actualmente este plugin no implemente el cierre de sesión manual por parte del alumno, es decir que tampoco muestra un contador de minutos al iniciar la sesión, sin embargo puede configurarse para solicitar una sola asistencia en toda la duración del curso para cumplir con el requisito de la resolución [2436](https://sence.gob.cl/sites/default/files/rex_n_2436_deja_sin_efecto_exigencia_de_conectividad.pdf) ó cerrar la sesión del alumno de forma automática cada 3 horas.
 
-## Actualización 3.1 del Plugin
+## Actualización 3.1.2 del Plugin
 ### Cambios
-* Funcionalidad Multiotec/Monototec
+* Elimina el bloqueo de la pantalla del curso a profesores sin privilegios de edición. (Para la versión anterior solo deben agregar al profesor en el grupo "Becarios")
 ###
 
 ## Descarga
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v3.1.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/archive/v3.1.2.zip)
 
 
 ## Configuración General
