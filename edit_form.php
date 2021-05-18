@@ -26,9 +26,10 @@ class block_sence_edit_form extends block_edit_form {
         /**
          * Código SENCE del Curso
          */
-        $mform->addElement('text', 'config_codigoCurso', get_string('codigocurso', 'block_sence'), ['size' => '10', 'maxlength' => '10']);
+        $mform->disabledIf('config_codigoCurso', 'config_lineaCap', 'eq', 1);
+        $mform->addElement('text', 'config_codigoCurso', get_string('codigocurso', 'block_sence'), ['size' => '15', 'maxlength' => '10']);
         $mform->setType('config_codigoCurso', PARAM_TEXT);
-        $mform->setDefault('config_codigoCurso','');
+        // $mform->setDefault('config_codigoCurso','');
 
         /**
          * Grupo de Becarios del Curso
@@ -38,11 +39,17 @@ class block_sence_edit_form extends block_edit_form {
         $mform->setDefault('config_grupoBecas','Becarios');
 
         /**
-         *  True: Pedirá asistencia nueva cuando la anterior tenga más de 3 Horas
-         *  False: Solicitará una asistencia en toda la vida del curso
+         *  Bloquea/Desbloquea el contenido del Curso hasta que se logre una asistencia exitosa.
          */
-        $mform->addElement('advcheckbox', 'config_senceTiempoCierre', 'Cerrar sesión del Alumno después de 3 Horas' );
+        $mform->addElement('advcheckbox', 'config_asistenciaObligatoria', 'Solicitar asistencia obligatoria' );
+        $mform->setDefault('config_asistenciaObligatoria', true);
+
+        /**
+         *  Opcional
+         */
+        $mform->addElement('advcheckbox', 'config_senceTiempoCierre', 'Solicitar cierre de Sesión SENCE' );
         $mform->setDefault('config_senceTiempoCierre', false);
+
 
         /**
          *  True: Pedirá asistencia nueva cuando la anterior tenga más de 3 Horas
@@ -50,5 +57,10 @@ class block_sence_edit_form extends block_edit_form {
          */
         $mform->addElement('advcheckbox', 'config_muestraLogo', 'Mostrar logo SENCE en en Bloque' );
         $mform->setDefault('config_muestraLogo', false);
+
+        /**
+         */
+        $mform->addElement('advcheckbox', 'config_testEnv', 'Usar el ambiente de Pruebas de SENCE' );
+        $mform->setDefault('config_testEnv', false);
     }
 }
