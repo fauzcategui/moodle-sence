@@ -18,7 +18,7 @@
         <FIELD NAME="fechahora" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="zonahoraria" TYPE="char" LENGTH="120" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="lineacapacitacion" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="cierresesion" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="cierresesion" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

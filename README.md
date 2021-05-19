@@ -1,7 +1,8 @@
-# SENCE Moodle Plugin
+# Plugin de Integración SENCE para Moodle
 Plugin desarrollado para que Organismos Técnicos de Capacitación implementen la asistencia en los cursos bajo modalidad sence [Info SENCE](https://sence.gob.cl/organismos/control-e-learning-otec)
 
 ## Actualización 3.2 del Plugin
+Requiere Moodle 3.8 o superior
 ### Cambios
 * Agrega la funcionalidad de Descarga de Reportes de asistencias por Curso
 * Finalmente se agrego el cierre de Sesión con su respectivo contador de Minutos.
