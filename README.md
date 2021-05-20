@@ -15,7 +15,7 @@ Requiere Moodle 3.8 o superior
 ###
 
 ## Descarga
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/releases/download/v3.2/sence-v3.2.zip.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/releases/download/v3.2/sence-v3.2.zip)
 
 
 ## Configuración General
