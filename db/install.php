@@ -30,11 +30,19 @@ defined('MOODLE_INTERNAL') || die();
  */
 function xmldb_block_sence_install() {
     global $CFG, $DB;
+
     $DB->delete_records( 'config_plugins', ['plugin' => 'sence_block'] );
-    return $DB->insert_record('config_plugins',[
+
+    $DB->insert_record('config_plugins',[
         'plugin' => 'block_sence',
         'name' => 'otecs',
         'value' => json_encode( ['multiotec' => false,'otecs' => [] ])
+    ]);
+
+    $DB->insert_record('config_plugins',[
+        'plugin' => 'block_sence',
+        'name' => 'testenv',
+        'value' => '0'
     ]);
 
     return true;
