@@ -342,16 +342,6 @@ class Engine
         return false;
     }
 
-    private function es_profesor_no_editor(){
-        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
-            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
-        ){
-            return true;
-        }
-
-        return false;
-    }
-
     private function es_alumno(){
         return !has_capability('moodle/course:viewhiddensections', $this->coursecontext);
     }
