@@ -333,8 +333,11 @@ class Engine
     }
 
     private function es_profesor_no_editor(){
-        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
-            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+        global $USER;
+        $role = current(get_user_roles($this->coursecontext, $USER->id));
+
+        if( !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+            && $role->shortname == 'teacher'
         ){
             return true;
         }
