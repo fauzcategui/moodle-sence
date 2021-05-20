@@ -22,7 +22,6 @@ class block_sence_edit_form extends block_edit_form {
         $mform->addElement('select', 'config_lineaCap', get_string('lineadecap', 'block_sence'), $lineascap);
         $mform->setDefault('config_lineaCap', 3);
 
-
         /**
          * Código SENCE del Curso
          */
@@ -39,17 +38,10 @@ class block_sence_edit_form extends block_edit_form {
         $mform->setDefault('config_grupoBecas','Becarios');
 
         /**
-         *  Bloquea/Desbloquea el contenido del Curso hasta que se logre una asistencia exitosa.
-         */
-        $mform->addElement('advcheckbox', 'config_asistenciaObligatoria', 'Solicitar asistencia obligatoria' );
-        $mform->setDefault('config_asistenciaObligatoria', true);
-
-        /**
          *  Opcional
          */
         $mform->addElement('advcheckbox', 'config_senceTiempoCierre', 'Solicitar cierre de Sesión SENCE' );
         $mform->setDefault('config_senceTiempoCierre', false);
-
 
         /**
          *  True: Pedirá asistencia nueva cuando la anterior tenga más de 3 Horas
@@ -59,8 +51,9 @@ class block_sence_edit_form extends block_edit_form {
         $mform->setDefault('config_muestraLogo', false);
 
         /**
+         *  Bloquea/Desbloquea el contenido del Curso hasta que se logre una asistencia exitosa.
          */
-        $mform->addElement('advcheckbox', 'config_testEnv', 'Usar el ambiente de Pruebas de SENCE' );
-        $mform->setDefault('config_testEnv', false);
+        $mform->addElement('advcheckbox', 'config_asistenciaObligatoria', 'Solicitar asistencia obligatoria' );
+        $mform->setDefault('config_asistenciaObligatoria', true);
     }
 }

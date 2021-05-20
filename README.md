@@ -22,6 +22,7 @@ Requiere Moodle 3.8 o superior
 En la Configuración General del Bloque se agregan:
 * RUT de las OTECs
 * Token de cada OTEC generado en [https://sistemas.sence.cl/rts](https://sistemas.sence.cl/rts)
+* Usar el ambiente de Pruebas de SENCE [Default: desactivado]:  El bloque viene por defecto preparado para trabajar en el ambiente de producción del SENCE y poder registrar asistencias reales. Al activar esta opción puedes realizar pruebas de implementación en el bloque sin tener que registrar asistencias y no necesitarás un código de curso válido. Se recomienda la lectura del [Manual Técnico de  "Integración Registro Asistencia SENCE"](https://sence.gob.cl/sites/default/files/integracion_registro_asistencia_sence_v1.1.3_0.pdf) (Documento oficial de SENCE), en caso de querer realizar pruebas o implementar alguna funcionalidad por tu cuenta. Tambien te invito a compartirla en ese caso :smiley:
 
 
 ## Instrucciones
@@ -58,7 +59,6 @@ En la Configuración General del Bloque se agregan:
 >
 >- "Solicitar cierre de Sesión SENCE" [Default: desactivado] > Por defecto el bloque exigirá una sola sesión durante toda la duración del Curso. Pero al activar esta opción se le mostrará el botón de "Cerrar Sesión" al participante, las sesiones tendrán una duración máxima de 3 horas y el bloque volverá a solicitar inicio de sesión después de ese tiempo aún si el participante no cerró de forma manual la última sesión.
 >
->- "Usar el ambiente de Pruebas de SENCE" [Default: desactivado] > El bloque viene por defecto preparado para trabajar en el ambiente de producción del SENCE y poder registrar asistencias reales. Al activar esta opción puedes realizar pruebas de implementación en el bloque sin tener que registrar asistencias y no necesitarás un código de curso válido. Se recomienda la lectura del [Manual Técnico de  "Integración Registro Asistencia SENCE"](#) (Documento oficial de SENCE), en caso de querer realizar pruebas o implementar alguna funcionalidad por tu cuenta. Tambien te invito a compartirla en ese caso :smiley:
 >
 > - "Mostrar logo SENCE en en Bloque[Default: desactivado]" > muestra el logo de SENCE en la parte inferior del Bloque.
 ##### 4 -Asignación de alumnos:

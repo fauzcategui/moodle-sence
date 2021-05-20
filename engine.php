@@ -154,9 +154,10 @@ class Engine
         $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
-        $this->asistenciaObligatoria = $this->get_instance_config('asistenciaObligatoria');
+        $this->asistenciaObligatoria = $this->get_instance_config('asistenciaObligatoria') ? $this->get_instance_config('asistenciaObligatoria') : true;
 
-        $this->testEnv = $this->get_instance_config('testEnv');
+        $this->testEnv = boolval( get_config('block_sence','testenv') );
+
         $this->urlInicio = $this->testEnv ? $this->urlInicioTest : $this->urlInicioProd;
         $this->urlCierre = $this->testEnv ? $this->urlCierreTest : $this->urlCierreProd;
         $this->reporter = new sence_report( $COURSE->id );
@@ -170,7 +171,6 @@ class Engine
                 $users = groups_get_members( $group->id,'u.id');
                 foreach( $users as $user ){
                     if( $USER->id == $user->id ){
-                        // return strtolower($group->name);
                         return $group->name;
                     }
                 }

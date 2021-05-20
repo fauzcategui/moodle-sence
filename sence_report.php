@@ -38,13 +38,13 @@ class sence_report
 {
 
     protected $headers = [
-        'coursename' => 'Curso',
-        'firstname' => 'Nombres',
-        'lastname' => 'Apellidos',
+        'coursename' => 'CURSO',
+        'firstname' => 'NOMBRES',
+        'lastname' => 'APELLIDOS',
         'runalumno' => 'RUN',
-        'codsence' => 'ID SENCE',
-        'codigocurso' => 'CODIGO CURSO',
-        'fechahora' => 'Fecha/Hora de Asistencia'
+        'codsence' => 'CODIGO CURSO',
+        'codigocurso' => 'ID SENCE',
+        'fechahora' => 'FECHA/HORA DE ASISTENCIA'
     ];
 
     public function handle(){
@@ -109,8 +109,6 @@ class sence_report
     private function get_asistencias(){
         global $DB, $COURSE;
         $asistencias = $DB->get_records("block_sence", ['courseid' => $COURSE->id ], 'fechahora DESC');
-        // $asistencias = $DB->get_records("block_sence", ['courseid' => $COURSE->id ], 'timecreated DESC' );
-        // $asistencias = $DB->get_records_select("block_sence", "courseid={$COURSE->id}", null, '', 'DISTINCT userid, runalumno, codsence, codigocurso, fechahora');
         if( count( $asistencias ) < 1 ){
             return null;
         }
@@ -118,14 +116,16 @@ class sence_report
         $result = [];
 
         foreach( $asistencias as $asistencia ){
-            // var_dump( $asistencia );
             $alumnos = $DB->get_records_select('user', "id={$asistencia->userid}", null, '', 'firstname, lastname' );
             foreach( $alumnos as $alumno ){
                 $alumno->coursename = $COURSE->fullname;
                 $alumno->runalumno = $asistencia->runalumno;
                 $alumno->codsence = $asistencia->codsence;
                 $alumno->codigocurso = $asistencia->codigocurso;
-                $alumno->fechahora = $asistencia->fechahora;
+
+                $date = new DateTime($asistencia->fechahora);
+                $date = $date->format('d-m-Y H:i:s');
+                $alumno->fechahora = $date;
                 $result[] = $alumno;
             }
         }
