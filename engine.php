@@ -489,7 +489,7 @@ class Engine
     private function get_otec(){
         $settings = json_decode( get_config('block_sence', 'otecs'), true );
 
-        if( $settings['otecs'] > 0 ){
+        if( count($settings['otecs']) > 0 ){
             return $settings['otecs'][0];
         }
 
