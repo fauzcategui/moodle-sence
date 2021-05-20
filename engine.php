@@ -23,6 +23,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once('sence_report.php');
 
 /**
  * Class utilizada para procesar la asistencia de alumnos del bloque Sence
@@ -42,12 +43,22 @@ class Engine
 
 
     /**
-     * Links del Sence
+     * Links de SENCE para ambiente de Producción
      */
-    private $urlInicio = 'https://sistemas.sence.cl/rce/Registro/IniciarSesion';
+    private $urlInicioProd = 'https://sistemas.sence.cl/rce/Registro/IniciarSesion';
+    private $urlCierreProd = 'https://sistemas.sence.cl/rce/Registro/CerrarSesion';
+
+    /**
+     * Links de SENCE para ambiente TEST
+     */
     private $urlInicioTest = 'https://sistemas.sence.cl/rcetest/Registro/IniciarSesion';
-    private $urlCierre = '#';
-    private $urlCierreTest = '#';
+    private $urlCierreTest = 'https://sistemas.sence.cl/rcetest/Registro/CerrarSesion';
+
+
+    /**
+     * Links que se Utilizaran en el Bloque
+     */
+    private $urlInicio, $urlCierre;
 
     /**
      * Otros Links de Interés del SENCE
@@ -61,33 +72,38 @@ class Engine
      * Posibles errores a reportar por SENCE según Documentación
      */
     private  $erroresSence = [
-        '100' =>  'Contraseña incorrecta.',
-        '200' =>  'Parámetros vacíos.',
-        '201' =>  'Parámetro UrlError sin datos.',
-        '202' =>  'Parámetro UrlError con formato incorrecto.',
-        '203' =>  'Parámetro UrlRetoma con formato incorrecto.',
-        '204' =>  'Parámetro CodSence con formato incorrecto.',
-        '205' =>  'Parámetro CodigoCurso con formato incorrecto.',
-        '206' =>  'Línea de capacitación con formato incorrecto.',
-        '207' =>  'Parámetro RunAlumno incorrecto.',
-        '208' =>  'Parámetro RunAlumno diferente al enviado por OTEC.',
-        '209' =>  'Parámetro RutOtec incorrecto.',
-        '210' =>  'Sesión caducada.',
-        '211' =>  'Token incorrecto.',
-        '212' =>  'Token caducado.',
-        '300' =>  'Error interno.',
-        '301' =>  'Error interno.',
-        '302' =>  'Error interno.',
-        '303' =>  'Error interno.',
-        '304' =>  'Error interno.',
-        '305' =>  'Error interno.',
+        '100' => 'Contraseña incorrecta o el usuario no tiene Clave SENCE.',
+        '200' => 'El POST tiene uno o más parámetros mandatorios sin información.',
+        '201' => 'La URL de Retoma y/o URL de Error no tienen información. Ambos parámetros son obligatorios en todos los POST.',
+        '202' => 'La URL de Retoma tiene formato incorrecto.',
+        '203' => 'La URL de Error tiene formato incorrecto.',
+        '204' => 'El => Código SENCE tiene menos de 10 caracteres y/o no es código válido.',
+        '205' => 'El Código Curso tiene menos de 7 caracteres y/o no es código válido.',
+        '206' => 'La línea de capacitación es incorrecta.',
+        '207' => 'El Run Alumno tiene formato incorrecto, o tiene el dígito verificador incorrecto.',
+        '208' => 'El Run Alumno no está autorizado para realizar el curso.',
+        '209' => 'El Rut OTEC tiene formato incorrecto, o tiene el dígito verificador incorrecto.',
+        '210' => 'Expiró el tiempo disponible para el ingreso de RUT y Contraseña. El tiempo disponible es de tres minutos.',
+        '211' => 'El Token no pertenece al OTEC.',
+        '212' => 'El Token no está vigente.',
+        '300' => 'Error interno no clasificado, se debe reportar al SENCE con la mayor cantidad de antecedentes disponibles.',
+        '301' => 'No se pudo registrar el ingreso o cierre de sesión. Esto ocurre cuando la Línea de Capacitación es incorrecta, o el Código de Curso es incorrecto.',
+        '302' => 'No se pudo validar la información del Organismo, se debe reportar al SENCE con la mayor cantidad de antecedentes disponibles.',
+        '303' => 'El Token no existe, o su formato es incorrecto.',
+        '304' => 'No se pudieron verificar los datos enviados, se debe reportar al SENCE con la mayor cantidad de antecedentes disponibles.',
+        '305' => 'No se pudo registrar la información, se debe reportar al SENCE con la mayor cantidad de antecedentes disponibles.',
+        '306' => 'El Código Curso no corresponde al Código SENCE.',
+        '307' => 'El Código Curso no tiene modalidad E-Learning.',
+        '308' => 'El Código Curso no corresponde al RUT OTEC.',
+        '309' => 'Las fechas de ejecución comunicadas para el Código Curso no corresponden a la fecha actual.',
+        '310' => 'El Código Curso está en estado Terminado o Anulado.'
     ];
 
 
     /**
      * Parametros para el Formulario SENCE
      */
-    private $token, $rutOtec, $lineaCap, $codCurso, $codAlumno, $runAlumno, $sesionAlumno;
+    private $token, $rutOtec, $lineaCap, $codCurso, $codAlumno, $runAlumno, $sesionAlumno, $sesionSence;
 
     /**
      * Instancia del Bloque
@@ -105,13 +121,21 @@ class Engine
      */
     private $tiempoSesion = 3600 * 3;
 
+    private $ultimaSesion;
+
     /**
      * Nombre del Grupo de Becarios
      */
     private $nombreBecarios;
 
+    private $asistenciaObligatoria;
+
+    private $testEnv;
+
     private $mensajeError = '';
 
+
+    private $reporter;
 
     function __construct(){
         global $DB, $COURSE, $USER;
@@ -130,6 +154,14 @@ class Engine
         $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
+
+        $this->asistenciaObligatoria = $this->get_instance_config('asistenciaObligatoria') ? $this->get_instance_config('asistenciaObligatoria') : true;
+
+        $this->testEnv = boolval( get_config('block_sence','testenv') );
+
+        $this->urlInicio = $this->testEnv ? $this->urlInicioTest : $this->urlInicioProd;
+        $this->urlCierre = $this->testEnv ? $this->urlCierreTest : $this->urlCierreProd;
+        $this->reporter = new sence_report( $COURSE->id );
     }
 
     public function encontar_grupo(){
@@ -140,7 +172,7 @@ class Engine
                 $users = groups_get_members( $group->id,'u.id');
                 foreach( $users as $user ){
                     if( $USER->id == $user->id ){
-                        return strtolower($group->name);
+                        return $group->name;
                     }
                 }
             }
@@ -166,70 +198,96 @@ class Engine
          */
         if( isset( $_POST['RunAlumno'] ) ){
             if( isset($_POST['GlosaError']) ){
-                $PAGE->requires->js('/blocks/sence/js/locker.js');
+                if( $this->asistenciaObligatoria ){
+                    $PAGE->requires->js('/blocks/sence/js/locker.js');
+                }
                 $this->es_alumno_sence();
-                return $this->formatea_error( $_POST['GlosaError'] ) . $this->asistencia_form();
+                return $this->formatea_error( $_POST['GlosaError'] ) . $this->asistencia_inicio_form();
             }
-            $this->registra_asistencia();
+            $this->registra_asistencia($_POST);
         }
 
         if( !$this->es_alumno_sence() ){
             if( $this->codAlumno != $this->nombreBecarios ){
-                $PAGE->requires->js('/blocks/sence/js/locker.js');
-                return 'Alumno no autorizado para este curso';
+                if( $this->asistenciaObligatoria ){
+                    $PAGE->requires->js('/blocks/sence/js/locker.js');
+                    return 'Alumno no autorizado para este curso';
+                }
             }
             return '';
         }
 
         if( $this->asistencia_vigente() ){
+            if( $this->get_instance_config('senceTiempoCierre') ){
+                return $this->asistencia_cierre_form();
+            }
+
             return 'Asistencia Registrada';
         }
 
-        $PAGE->requires->js('/blocks/sence/js/locker.js');
-        return  $this->asistencia_form();
+        if( $this->asistenciaObligatoria ){
+            $PAGE->requires->js('/blocks/sence/js/locker.js');
+        }
+
+        return  $this->asistencia_inicio_form();
 
     }
 
     private function asistencia_vigente(){
         global $DB, $USER, $COURSE;
-        if( $this->get_instance_config('senceTiempoCierre') ){
-            $asistencia = $DB->get_records( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
-            if( count( $asistencia ) > 0 ){
+        $asistencia = $DB->get_records( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
+        if( count( $asistencia ) > 0 ){
+            if( $this->get_instance_config('senceTiempoCierre') ){
                 $asistencia  =  array_values( $asistencia );
-                return ( time() - $asistencia[count($asistencia)-1]->timecreated ) < $this->tiempoSesion;
+                if( $asistencia[count($asistencia)-1]->cierresesion ){
+                    return false;
+                }
+                if( ( time() - $asistencia[count($asistencia)-1]->timecreated ) > $this->tiempoSesion ){
+                    return false;
+                }
             }
-            return false;
+            $this->ultimaSesion = $asistencia[count($asistencia)-1]->timecreated;
+            $this->sesionSence = $asistencia[count($asistencia)-1]->idsesionsence;
+            return true;
         }
 
-        return $DB->record_exists( 'block_sence', [ 'courseid' => $COURSE->id, 'userid' => $USER->id ] );
+        return false;
+
     }
 
     private function config_esta_completa(){
-        $error = false;
+        $ready = true;
         $this->mensajeError = '';
+
+        $longitud = $this->testEnv ? 1 : 10;
+        $s = !$this->testEnv ? 's' : '';
 
         if( !$this->rutOtec || !$this->token ){
             if( self::is_multiotec() ){
-                $this->mensajeError = $this->mensajeError.'<li>Seleccionar una OTEC para este Bloque</li>';
+                $this->mensajeError = "{$this->mensajeError}'<li>Seleccionar una OTEC para este Bloque</li>";
             }
             else{
-                $this->mensajeError = $this->mensajeError.'<li>Configurar OTEC del Sitio</li>';
+                $this->mensajeError = "{$this->mensajeError}<li>Configurar OTEC del Sitio</li>";
             }
-            $error = true;
+            $ready = false;
         }
-        if( strlen( strval($this->codCurso) ) < 10 ){
-            $this->mensajeError = $this->mensajeError.'<li>Configurar un Código de Curso de 10 dígitos</li>';
-            $error = true;
+        if( intval($this->lineaCap) !== 1 ){
+            if( strlen( strval($this->codCurso) ) < $longitud ){
+                $this->mensajeError = "{$this->mensajeError}<li>Configurar un Código de Curso de {$longitud} dígito{$s}</li>";
+                $ready = false;
+            }
         }
-        return !$error;
+        return $ready;
     }
 
     private function content_editor(){
         $result = '';
+        $msj = intval($this->lineaCap) !== 1 ? "<br><span>Código Curso: <b>{$this->codCurso}</b></span>" : '';
+
         if( $this->config_esta_completa() ){
             $result = "<p>Integración SENCE Activada
                         <br><span>OTEC: <b>{$this->rutOtec}</b></span>
-                        <br><span>Código Curso: <b>{$this->codCurso}</b></span>
+                        {$msj}
                         </p>";
         }
         else{
@@ -238,7 +296,8 @@ class Engine
                         <ul>{$this->mensajeError}</ul></div>";
         }
 
-        $cierreSesison = $this->get_instance_config('senceTiempoCierre') ? 'La sesión del participante se cerrará cada 3 Horas' : 'Se pedirá Iniciar sesión una sola vez al participante';
+        $cierreSesison = $this->get_instance_config('senceTiempoCierre') ? 'Se solicitará cierre de sesión al participante' : 'Se solicitará Iniciar sesión una sola vez al participante';
+
         $grupo = $this->get_instance_config('grupoBecas');
         $instrucciones = "<ul>
                             <li>Recuerda asignar el ID de acción en el nombre del grupo de tus participantes, así: SENCE-XXXXXXX</li>
@@ -246,7 +305,8 @@ class Engine
                             <li>{$cierreSesison}</li>
                         </ul>";
 
-        return $result . $instrucciones;
+        $this->reporter->handle();
+        return $result . $instrucciones . $this->reporter->bt_descarga() ;
     }
 
     private function es_alumno_sence(){
@@ -261,6 +321,21 @@ class Engine
         $t = explode('-', $r);
         if( count($t) == 2 ){
             $this->codAlumno = $t[1];
+            return true;
+        }
+
+        $this->codAlumno = str_replace('sence-','', $r);
+        $this->codAlumno = str_replace('SENCE-','', $this->codAlumno);
+        return true;
+
+
+        return false;
+    }
+
+    private function es_profesor_no_editor(){
+        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
+            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+        ){
             return true;
         }
 
@@ -281,13 +356,26 @@ class Engine
         return !has_capability('moodle/course:viewhiddensections', $this->coursecontext);
     }
 
-    private function registra_asistencia(){
+    private function registra_asistencia($response){
         global $DB, $COURSE, $USER;
+
+        if( !isset($response['IdSesionSence']) ){
+            // Cierre de Sesión
+            return $DB->set_field( 'block_sence' , 'cierresesion', time(), [ 'idsesionalumno' => $response['IdSesionAlumno'] ] );
+        }
 
         $data = [
             'userid' => $USER->id,
             'courseid' => $COURSE->id,
             'timecreated' => time(),
+            'codsence' => isset($response['CodSence']) ? $response['CodSence'] : null,
+            'codigocurso' => $response['CodigoCurso'],
+            'idsesionalumno' => $response['IdSesionAlumno'],
+            'idsesionsence' => $response['IdSesionSence'],
+            'runalumno' => $response['RunAlumno'],
+            'fechahora' => $response['FechaHora'],
+            'zonahoraria' => $response['ZonaHoraria'],
+            'lineacapacitacion' => $response['LineaCapacitacion']
         ];
 
         return $DB->insert_record( 'block_sence' , $data);
@@ -303,7 +391,7 @@ class Engine
         return $show;
     }
 
-    private function asistencia_form(){
+    private function asistencia_inicio_form(){
         global $PAGE;
         if( !$this->runAlumno ){
             return '<div class="alert alert-danger">Se debe configurar el RUN del alumno para continuar</div>';
@@ -321,19 +409,49 @@ class Engine
         if( $this->config_esta_completa() ){
             return "<form style='text-align:center;' method='POST' action='{$this->urlInicio}'>
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>Iniciar Sesión</button>
-                    <input value='{$this->rutOtec}' type='hidden' name='RutOtec' placeholder='RutOtec' class='form-control'>
-                    <input value='{$this->token}' type='hidden' name='Token' placeholder='Token' class='form-control'>
-                    <input value='{$this->lineaCap}' type='hidden' name='LineaCapacitacion' placeholder='LineaCapacitacion' class='form-control'>
-                    <input value='{$this->runAlumno}' type='hidden' name='RunAlumno' placeholder='RunAlumno' class='form-control'>
-                    <input value='{$this->sesionAlumno}' type='hidden' name='IdSesionAlumno' placeholder='IdSesionAlumno' class='form-control'>
-                    <input value='{$PAGE->url}' type='hidden' name='UrlRetoma' placeholder='UrlRetoma' class='form-control'>
-                    <input value='{$PAGE->url}' type='hidden' name='UrlError' placeholder='UrlError' class='form-control'>
-                    <input value='{$this->codCurso}' type='hidden' name='CodSence' placeholder='CodSence' class='form-control'>
-                    <input value='{$this->codAlumno}' type='hidden' name='CodigoCurso' placeholder='CodigoCurso' class='form-control'>
+                    <input value='{$this->rutOtec}' type='hidden' name='RutOtec'>
+                    <input value='{$this->token}' type='hidden' name='Token'>
+                    <input value='{$this->lineaCap}' type='hidden' name='LineaCapacitacion'>
+                    <input value='{$this->runAlumno}' type='hidden' name='RunAlumno'>
+                    <input value='{$this->sesionAlumno}' type='hidden' name='IdSesionAlumno'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlRetoma'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlError'>
+                    <input value='{$this->codCurso}' type='hidden' name='CodSence'>
+                    <input value='{$this->codAlumno}' type='hidden' name='CodigoCurso'>
                     </form>
                     {$linksDeInteres}";
         }
         return "<div class='alert alert-danger'>Integración SENCE Incompleta. Contacte al Administrador</div>{$linksDeInteres}";
+    }
+
+    private function asistencia_cierre_form(){
+        global $PAGE;
+        $PAGE->requires->js('/blocks/sence/js/timer.js');
+        $date = time() - $this->ultimaSesion;
+        return "
+        <style>
+            .timer{
+                font-size: 25px;
+                padding: 10px;
+                text-align:center;
+        </style>
+        <input type='hidden' value='{$date}' id='counter' />
+        <div class='timer'>
+            <label id='minutes'>00</label>:<label id='seconds'>00</label>
+        </div>
+        <form style='text-align:center;' method='POST' action='{$this->urlCierre}'>
+                    <button type='submit' class='btn btn-primary btn-block btn-lg'>Cerrar Sesión</button>
+                    <input value='{$this->rutOtec}' type='hidden' name='RutOtec'>
+                    <input value='{$this->token}' type='hidden' name='Token'>
+                    <input value='{$this->lineaCap}' type='hidden' name='LineaCapacitacion'>
+                    <input value='{$this->runAlumno}' type='hidden' name='RunAlumno'>
+                    <input value='{$this->sesionAlumno}' type='hidden' name='IdSesionAlumno'>
+                    <input value='{$this->sesionSence}' type='hidden' name='IdSesionSence'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlRetoma'>
+                    <input value='{$PAGE->url}' type='hidden' name='UrlError'>
+                    <input value='{$this->codCurso}' type='hidden' name='CodSence'>
+                    <input value='{$this->codAlumno}' type='hidden' name='CodigoCurso'>
+                    </form>";
     }
 
     private function run_alumno(){

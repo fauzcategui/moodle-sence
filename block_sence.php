@@ -9,7 +9,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require('engine.php');
+
+require_once('engine.php');
 
 class block_sence extends block_base {
 
@@ -18,22 +19,25 @@ class block_sence extends block_base {
     public function init() {
         $this->title = get_string('pluginname', 'block_sence');
     }
-    
+
     function has_config() {
         return true;
     }
-    
+
     function instance_allow_config() {
         return true;
     }
-    
+
     public function instance_allow_multiple() {
         return false;
     }
-    
-    public function get_content() {
-        $sence = new Engine();
 
+    public function get_content() {
+        if ($this->content !== null) {
+            return $this->content;
+        }
+
+        $sence = new Engine();
         $this->content =  new stdClass;
         $this->content->text = $sence->content();
         $this->content->footer = $sence->get_footer();
