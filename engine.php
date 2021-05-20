@@ -154,6 +154,7 @@ class Engine
         $this->lineaCap = $this->get_instance_config('lineaCap') ? $this->get_instance_config('lineaCap') : '';
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
+
         $this->asistenciaObligatoria = $this->get_instance_config('asistenciaObligatoria') ? $this->get_instance_config('asistenciaObligatoria') : true;
 
         $this->testEnv = boolval( get_config('block_sence','testenv') );
@@ -327,6 +328,16 @@ class Engine
         $this->codAlumno = str_replace('SENCE-','', $this->codAlumno);
         return true;
 
+
+        return false;
+    }
+
+    private function es_profesor_no_editor(){
+        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
+            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+        ){
+            return true;
+        }
 
         return false;
     }
