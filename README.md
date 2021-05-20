@@ -14,8 +14,9 @@ Requiere Moodle 3.8 o superior
 * Corrección de la doble ejecución de código. Esto hacía que se guardaran 2 veces las asistencias en la base de datos. (Esto afectaba relamente a la reportería que se agrego en esta nueva versión).
 ###
 
-## Descarga
+
 [Versión Estable](https://github.com/fauzcategui/moodle-sence/releases/download/v3.2/sence-v3.2.zip)
+
 
 
 ## Configuración General
