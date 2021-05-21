@@ -1,13 +1,11 @@
 # Plugin de Integración SENCE para Moodle
 Plugin desarrollado para que Organismos Técnicos de Capacitación implementen la asistencia en los cursos bajo modalidad sence [Info SENCE](https://sence.gob.cl/organismos/control-e-learning-otec)
 
-## Actualización 3.2 del Plugin
+## Actualización 3.2 Alternativa del Plugin
 Requiere Moodle 3.8 o superior
 ### Cambios
 * Agrega la funcionalidad de Descarga de Reportes de asistencias por Curso
 * Finalmente se agrego el cierre de Sesión con su respectivo contador de Minutos.
-* Opción que permite el inicio de sesión de SENCE como opcional (Por defecto viene activado como obligatorio).
-* Opción que permite activa el ambiente TEST de SENCE para realizar pruebas de implementación sin tener que registrar asistencias reales (Viene desactivado por defecto).
 ###
 ### Arreglos:
 * Se arreglaron detalles del código que no permitían regisrtrar la asistencia de los cursos con linea de capacitación "1"
@@ -15,7 +13,7 @@ Requiere Moodle 3.8 o superior
 ###
 
 
-[Versión Estable](https://github.com/fauzcategui/moodle-sence/releases/download/v3.2/sence-v3.2.zip)
+[Versión Estable](https://github.com/fauzcategui/moodle-sence/releases/download/v3.2-alt/sence-v3.2-alt.zip)
 
 
 
@@ -23,8 +21,6 @@ Requiere Moodle 3.8 o superior
 En la Configuración General del Bloque se agregan:
 * RUT de las OTECs
 * Token de cada OTEC generado en [https://sistemas.sence.cl/rts](https://sistemas.sence.cl/rts)
-* Usar el ambiente de Pruebas de SENCE [Default: desactivado]:  El bloque viene por defecto preparado para trabajar en el ambiente de producción del SENCE y poder registrar asistencias reales. Al activar esta opción puedes realizar pruebas de implementación en el bloque sin tener que registrar asistencias y no necesitarás un código de curso válido. Se recomienda la lectura del [Manual Técnico de  "Integración Registro Asistencia SENCE"](https://sence.gob.cl/sites/default/files/integracion_registro_asistencia_sence_v1.1.3_0.pdf) (Documento oficial de SENCE), en caso de querer realizar pruebas o implementar alguna funcionalidad por tu cuenta. Tambien te invito a compartirla en ese caso :smiley:
-
 
 ## Instrucciones
 
@@ -55,8 +51,6 @@ En la Configuración General del Bloque se agregan:
 >
 >- "Nombre de grupo Becarios" > El nombre del grupo donde se agregaran los alumnos que participarán en el curso sin integración SENCE. Por defecto viene con el nombre "Becarios"
 >
->
->- "Solicitar asistencia obligatoria" [Default: activado] > En el caso de estar activada, no dejaré ver el contenido del curso al participante hasta que complete registre su asistencia SENCE, a excepción de los alumnos que pertenezcan al grupo Becarios. En el caso de estar desactivada, el bloque mostrará la opción de iniciar sesión a la derecha pero no bloqueara el curso, es decir esta será opcional.
 >
 >- "Solicitar cierre de Sesión SENCE" [Default: desactivado] > Por defecto el bloque exigirá una sola sesión durante toda la duración del Curso. Pero al activar esta opción se le mostrará el botón de "Cerrar Sesión" al participante, las sesiones tendrán una duración máxima de 3 horas y el bloque volverá a solicitar inicio de sesión después de ese tiempo aún si el participante no cerró de forma manual la última sesión.
 >
