@@ -53,7 +53,7 @@ class block_sence_edit_form extends block_edit_form {
         /**
          *  Bloquea/Desbloquea el contenido del Curso hasta que se logre una asistencia exitosa.
          */
-        $mform->addElement('advcheckbox', 'config_asistenciaObligatoria', 'Solicitar asistencia obligatoria' );
-        $mform->setDefault('config_asistenciaObligatoria', true);
+        // $mform->addElement('advcheckbox', 'config_asistenciaObligatoria', 'Solicitar asistencia obligatoria' );
+        // $mform->setDefault('config_asistenciaObligatoria', true);
     }
 }

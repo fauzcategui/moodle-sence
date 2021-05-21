@@ -155,9 +155,11 @@ class Engine
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
 
-        $this->asistenciaObligatoria = boolval( $this->get_instance_config('asistenciaObligatoria' ));
+        // $this->asistenciaObligatoria = boolval( $this->get_instance_config('asistenciaObligatoria' ));
+        $this->asistenciaObligatoria = true;
 
-        $this->testEnv = boolval( get_config('block_sence','testenv') );
+        // $this->testEnv = boolval( get_config('block_sence','testenv') );
+        $this->testEnv = false;
 
         $this->urlInicio = $this->testEnv ? $this->urlInicioTest : $this->urlInicioProd;
         $this->urlCierre = $this->testEnv ? $this->urlCierreTest : $this->urlCierreProd;

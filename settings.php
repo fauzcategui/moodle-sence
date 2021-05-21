@@ -11,8 +11,8 @@ if ($ADMIN->fulltree) {
      */
     $settings->add(new admin_setting_configtextarea('block_sence/otecs', '', '', '', PARAM_RAW));
 
-    $settings->add(new admin_setting_heading('block_sence/devzone', 'Ambiente de Pruebas SENCE', 'SOLO PARA REALIZAR PRUEBAS (NO MODIFICAR SI NO ESTA SEGURO)'));
+    // $settings->add(new admin_setting_heading('block_sence/devzone', 'Ambiente de Pruebas SENCE', 'SOLO PARA REALIZAR PRUEBAS (NO MODIFICAR SI NO ESTA SEGURO)'));
 
-    $settings->add(new admin_setting_configcheckbox('block_sence/testenv', 'Activar ambiente de pruebas', '' , '0' , '1', '0' ));
+    // $settings->add(new admin_setting_configcheckbox('block_sence/testenv', 'Activar ambiente de pruebas', '' , '0' , '1', '0' ));
 
 }
