@@ -245,9 +245,9 @@ class Engine
                 if( ( time() - $asistencia[count($asistencia)-1]->timecreated ) > $this->tiempoSesion ){
                     return false;
                 }
+                $this->ultimaSesion = $asistencia[count($asistencia)-1]->timecreated;
+                $this->sesionSence = $asistencia[count($asistencia)-1]->idsesionsence;
             }
-            $this->ultimaSesion = $asistencia[count($asistencia)-1]->timecreated;
-            $this->sesionSence = $asistencia[count($asistencia)-1]->idsesionsence;
             return true;
         }
 
@@ -513,7 +513,7 @@ class Engine
 
     private function get_instance_config($param){
         if( isset( $this->blockInstance->config ) ){
-            return $this->blockInstance->config->{$param};
+            return property_exists( $this->blockInstance->config, $param ) ? $this->blockInstance->config->{$param} : false;
         }
         return false;
     }

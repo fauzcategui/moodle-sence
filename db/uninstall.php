@@ -32,6 +32,8 @@ function xmldb_block_sence_uninstall() {
     global $DB;
 
     $DB->delete_records( 'config_plugins', ['plugin' => 'block_sence'] );
+    $DB->delete_records( 'block_instances', ['blockname' => 'sence'] );
     $DB->delete_records( 'block', ['name' => 'sence'] );
+
     return true;
 }
