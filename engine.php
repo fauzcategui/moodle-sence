@@ -513,7 +513,7 @@ class Engine
 
     private function get_instance_config($param){
         if( isset( $this->blockInstance->config ) ){
-            return $this->blockInstance->config->{$param};
+            return property_exists( $this->blockInstance->config, $param ) ? $this->blockInstance->config->{$param} : false;
         }
         return false;
     }

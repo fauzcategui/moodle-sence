@@ -85,17 +85,19 @@ class sence_report
         foreach ($this->headers as $header) {
             $xlsfile->write($row, $col++, $header);
         }
-        foreach ($asistencias as $datum) {
-            if (!is_object($datum)) {
-                continue;
-            }
-            $row++;
-            $col = 0;
-            foreach ($this->headers as $id => $header) {
-                if (isset($datum->{$id})) {
-                    $xlsfile->write($row, $col++, $datum->{$id});
-                } else {
-                    $xlsfile->write($row, $col++, '');
+        if( count( $asistencias ) > 0 ){
+            foreach ($asistencias as $datum) {
+                if (!is_object($datum)) {
+                    continue;
+                }
+                $row++;
+                $col = 0;
+                foreach ($this->headers as $id => $header) {
+                    if (isset($datum->{$id})) {
+                        $xlsfile->write($row, $col++, $datum->{$id});
+                    } else {
+                        $xlsfile->write($row, $col++, '');
+                    }
                 }
             }
         }
@@ -107,7 +109,7 @@ class sence_report
         global $DB, $COURSE;
         $asistencias = $DB->get_records("block_sence", ['courseid' => $COURSE->id ], 'fechahora DESC');
         if( count( $asistencias ) < 1 ){
-            return null;
+            return [];
         }
 
         $result = [];
