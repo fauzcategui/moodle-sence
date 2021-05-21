@@ -49,9 +49,6 @@ class sence_report
 
     public function handle(){
 
-        $this->get_asistencias();
-        
-
         if( isset( $_GET['xlsreport'] ) ){
             $this->genera_reporte();
         }
@@ -81,7 +78,7 @@ class sence_report
         $workbook = new MoodleExcelWorkbook("-");
         $workbook->send($filename);
 
-        $xlsfile =& $workbook->add_worksheet('asistencias');
+        $xlsfile = $workbook->add_worksheet('asistencias');
 
         $row = 0;
         $col = 0;

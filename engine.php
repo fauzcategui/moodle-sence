@@ -245,9 +245,9 @@ class Engine
                 if( ( time() - $asistencia[count($asistencia)-1]->timecreated ) > $this->tiempoSesion ){
                     return false;
                 }
+                $this->ultimaSesion = $asistencia[count($asistencia)-1]->timecreated;
+                $this->sesionSence = $asistencia[count($asistencia)-1]->idsesionsence;
             }
-            $this->ultimaSesion = $asistencia[count($asistencia)-1]->timecreated;
-            $this->sesionSence = $asistencia[count($asistencia)-1]->idsesionsence;
             return true;
         }
 
