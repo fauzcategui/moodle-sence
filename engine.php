@@ -155,7 +155,7 @@ class Engine
         $this->sesionAlumno = $USER->sesskey;
         $this->nombreBecarios = $this->get_instance_config('grupoBecas') ? strtolower($this->get_instance_config('grupoBecas')) : 'becarios';
 
-        $this->asistenciaObligatoria = $this->get_instance_config('asistenciaObligatoria') ? $this->get_instance_config('asistenciaObligatoria') : true;
+        $this->asistenciaObligatoria = boolval( $this->get_instance_config('asistenciaObligatoria' ));
 
         $this->testEnv = boolval( get_config('block_sence','testenv') );
 
@@ -291,7 +291,7 @@ class Engine
                         </p>";
         }
         else{
-            $result = "<div class='alert alert-danger'><p>¡CONFIGURACIÓN INCOMPLETA!</p>
+            $result = "<div class='alert alert-danger' style='position:unset !important;'><p>¡CONFIGURACIÓN INCOMPLETA!</p>
                         <p>Se debe:</p>
                         <ul>{$this->mensajeError}</ul></div>";
         }
@@ -333,8 +333,11 @@ class Engine
     }
 
     private function es_profesor_no_editor(){
-        if( current(get_user_roles($this->coursecontext, $USER->id))->shortname == 'teacher'
-            && !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+        global $USER;
+        $role = current(get_user_roles($this->coursecontext, $USER->id));
+
+        if( !has_capability('moodle/course:viewhiddensections', $this->coursecontext)
+            && $role->shortname == 'teacher'
         ){
             return true;
         }
@@ -427,7 +430,7 @@ class Engine
         </style>
         <input type='hidden' value='{$date}' id='counter' />
         <div class='timer'>
-            <label id='minutes'>00</label>:<label id='seconds'>00</label>
+            <span id='minutes'>00</span>:<span id='seconds'>00</span>
         </div>
         <form style='text-align:center;' method='POST' action='{$this->urlCierre}'>
                     <button type='submit' class='btn btn-primary btn-block btn-lg'>Cerrar Sesión</button>
@@ -486,7 +489,7 @@ class Engine
     private function get_otec(){
         $settings = json_decode( get_config('block_sence', 'otecs'), true );
 
-        if( $settings['otecs'] > 0 ){
+        if( count($settings['otecs']) > 0 ){
             return $settings['otecs'][0];
         }
 
