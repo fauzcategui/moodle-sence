@@ -16,6 +16,7 @@ class block_sence_edit_form extends block_edit_form {
          * Lineas de Capacitación
          */
         $lineascap = [
+            6 => 'FPT e-learning (6)',
             3 => 'Impulsa Personas (3)',
             1 => 'Programas Sociales o Becas Labores (1)',
         ];
